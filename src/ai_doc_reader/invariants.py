@@ -75,6 +75,16 @@ def _table_shape(tbl: etree._Element) -> list[list[tuple[str, str]]]:
     return shape
 
 
+def _entries(root: etree._Element, names: set[str]) -> list[tuple]:
+    """Index entries as a sorted list; a content-type Default for an unused extension is moot."""
+    used = {n.rsplit(".", 1)[-1].lower() for n in names}
+    return sorted(
+        (child.tag, tuple(sorted(child.attrib.items())))
+        for child in root
+        if not (child.tag.endswith("Default") and child.get("Extension", "").lower() not in used)
+    )
+
+
 def _non_story_parts_equal(a: Path, b: Path, story_names: set[str]) -> list[str]:
     errors = []
     with zipfile.ZipFile(a) as za, zipfile.ZipFile(b) as zb:
@@ -89,7 +99,12 @@ def _non_story_parts_equal(a: Path, b: Path, story_names: set[str]) -> list[str]
                 continue
             if name.endswith((".xml", ".rels")):
                 try:
-                    if _c14n(etree.fromstring(da)) == _c14n(etree.fromstring(db)):
+                    xa, xb = etree.fromstring(da), etree.fromstring(db)
+                    if _c14n(xa) == _c14n(xb):
+                        continue
+                    # Package indexes: entry order carries no meaning, compare as sets.
+                    is_index = name.endswith((".rels", "[Content_Types].xml"))
+                    if is_index and _entries(xa, names_a) == _entries(xb, names_b):
                         continue
                 except etree.XMLSyntaxError:
                     pass

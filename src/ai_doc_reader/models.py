@@ -65,6 +65,7 @@ class ChangeReport(BaseModel):
     segments_sent: int = 0
     duration_s: float = 0.0
     changes: list[Change] = Field(default_factory=list)
+    violations: list[str] = Field(default_factory=list)  # structure invariant failures
 
     def count(self, status: ChangeStatus) -> int:
         return sum(1 for c in self.changes if c.status == status)

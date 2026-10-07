@@ -7,19 +7,19 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-from ai_doc_reader.convert import Conversion, GateResult, docx_to_pdf, pdf_to_docx
-from ai_doc_reader.docx.reader import read_docx
-from ai_doc_reader.docx.writer import apply_edits
-from ai_doc_reader.invariants import check_docx, check_pdf
-from ai_doc_reader.llm.base import InvalidResponseError, LLMError, LLMProvider
-from ai_doc_reader.llm.prompts import (
+from ai_doc_editor.convert import Conversion, GateResult, docx_to_pdf, pdf_to_docx
+from ai_doc_editor.docx.reader import read_docx
+from ai_doc_editor.docx.writer import apply_edits
+from ai_doc_editor.invariants import check_docx, check_pdf
+from ai_doc_editor.llm.base import InvalidResponseError, LLMError, LLMProvider
+from ai_doc_editor.llm.prompts import (
     SCOPE_SYSTEM,
     SYSTEM,
     edit_request,
     scope_request,
     shorten_request,
 )
-from ai_doc_reader.models import (
+from ai_doc_editor.models import (
     Change,
     ChangeReport,
     ChangeStatus,
@@ -28,11 +28,11 @@ from ai_doc_reader.models import (
     Scope,
     Segment,
 )
-from ai_doc_reader.pdf.reader import read_pdf
-from ai_doc_reader.pdf.writer import PdfWriter
-from ai_doc_reader.report import write_html, write_json
-from ai_doc_reader.settings import Settings, get_settings
-from ai_doc_reader.soffice import convert
+from ai_doc_editor.pdf.reader import read_pdf
+from ai_doc_editor.pdf.writer import PdfWriter
+from ai_doc_editor.report import write_html, write_json
+from ai_doc_editor.settings import Settings, get_settings
+from ai_doc_editor.soffice import convert
 
 Progress = Callable[[float, str], None]
 SUPPORTED = {".docx", ".doc", ".pdf"}

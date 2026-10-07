@@ -2,13 +2,13 @@ import json
 
 import pytest
 
-from ai_doc_reader.docx.reader import read_docx
-from ai_doc_reader.editor import DocumentError, edit_document
-from ai_doc_reader.llm.base import LLMProvider
-from ai_doc_reader.llm.prompts import parse_segments
-from ai_doc_reader.llm.scripted import ScriptedProvider
-from ai_doc_reader.models import ChangeStatus
-from ai_doc_reader.presets import build_instruction
+from ai_doc_editor.docx.reader import read_docx
+from ai_doc_editor.editor import DocumentError, edit_document
+from ai_doc_editor.llm.base import LLMProvider
+from ai_doc_editor.llm.prompts import parse_segments
+from ai_doc_editor.llm.scripted import ScriptedProvider
+from ai_doc_editor.models import ChangeStatus
+from ai_doc_editor.presets import build_instruction
 
 RULES = [("Acme Corp", "Contoso Ltd"), ("recieve", "receive"), ("beleive", "believe")]
 

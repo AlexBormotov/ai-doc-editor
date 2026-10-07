@@ -1,9 +1,9 @@
 import pymupdf
 import pytest
 
-from ai_doc_reader.invariants import check_pdf
-from ai_doc_reader.pdf.reader import read_pdf
-from ai_doc_reader.pdf.writer import MIN_SCALE, PdfWriter
+from ai_doc_editor.invariants import check_pdf
+from ai_doc_editor.pdf.reader import read_pdf
+from ai_doc_editor.pdf.writer import MIN_SCALE, PdfWriter
 
 
 def _seg(doc, prefix):
@@ -163,7 +163,7 @@ def _block(text, x0, y0, x1, size=10.5, font="Body"):
 
 def test_one_line_per_block_pdfs_are_joined_into_paragraphs():
     """Regression: browser-printed PDFs emit every line as its own block."""
-    from ai_doc_reader.pdf.reader import segment_lines
+    from ai_doc_editor.pdf.reader import segment_lines
 
     blocks = [
         _block("1. About This Certification", 54, 182, 273, size=18, font="Head"),

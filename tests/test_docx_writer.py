@@ -3,10 +3,10 @@ import zipfile
 import pytest
 from lxml import etree
 
-from ai_doc_reader.docx.reader import paragraph_text, q, read_docx
-from ai_doc_reader.docx.writer import apply_edits, diff_ops
-from ai_doc_reader.invariants import check_docx, rejected_text
-from ai_doc_reader.models import ChangeStatus, Edit
+from ai_doc_editor.docx.reader import paragraph_text, q, read_docx
+from ai_doc_editor.docx.writer import apply_edits, diff_ops
+from ai_doc_editor.invariants import check_docx, rejected_text
+from ai_doc_editor.models import ChangeStatus, Edit
 
 
 def _edits_for(doc):
@@ -46,7 +46,7 @@ def test_replacement_inherits_formatting_of_replaced_text(fixtures, tmp_path):
     ins_runs = p.findall(f".//{q('w:ins')}/{q('w:r')}")
     assert len(ins_runs) == 1
     assert ins_runs[0].find(f"{q('w:rPr')}/{q('w:b')}") is not None
-    assert ins_runs[0].getparent().get(q("w:author")) == "AI Doc Reader"
+    assert ins_runs[0].getparent().get(q("w:author")) == "AI Doc Editor"
     assert paragraph_text(p).startswith("This report was prepared by Contoso for")
     assert rejected_text(p) == intro.text
 
@@ -121,7 +121,7 @@ def test_negative_control_formatting_change_is_detected(fixtures, tmp_path, targ
 
 @pytest.mark.soffice
 def test_tracked_output_opens_in_libreoffice(fixtures, tmp_path):
-    from ai_doc_reader.soffice import convert
+    from ai_doc_editor.soffice import convert
 
     doc = read_docx(fixtures / "report_en.docx")
     expected = _edits_for(doc)

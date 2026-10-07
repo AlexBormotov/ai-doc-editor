@@ -4,12 +4,12 @@ from types import SimpleNamespace
 import openai
 import pytest
 
-from ai_doc_reader.llm.base import InvalidResponseError, LLMProvider, extract_json, strict_schema
-from ai_doc_reader.llm.openai_compatible import OpenAICompatibleProvider
-from ai_doc_reader.llm.prompts import SYSTEM, edit_request, parse_segments
-from ai_doc_reader.llm.registry import get_provider
-from ai_doc_reader.llm.scripted import ScriptedProvider
-from ai_doc_reader.models import EditBatch
+from ai_doc_editor.llm.base import InvalidResponseError, LLMProvider, extract_json, strict_schema
+from ai_doc_editor.llm.openai_compatible import OpenAICompatibleProvider
+from ai_doc_editor.llm.prompts import SYSTEM, edit_request, parse_segments
+from ai_doc_editor.llm.registry import get_provider
+from ai_doc_editor.llm.scripted import ScriptedProvider
+from ai_doc_editor.models import EditBatch
 
 
 class Replies(LLMProvider):

@@ -1,8 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from ai_doc_reader import api
-from ai_doc_reader.llm.scripted import ScriptedProvider
+from ai_doc_editor import api
+from ai_doc_editor.llm.scripted import ScriptedProvider
 
 
 @pytest.fixture

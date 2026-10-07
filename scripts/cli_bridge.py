@@ -23,8 +23,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
-from ai_doc_reader.llm.base import LLMError  # noqa: E402
-from ai_doc_reader.llm.cli_provider import CLIS, run_cli  # noqa: E402
+from ai_doc_editor.llm.base import LLMError  # noqa: E402
+from ai_doc_editor.llm.cli_provider import CLIS, run_cli  # noqa: E402
 
 MAX_BODY = 2_000_000
 

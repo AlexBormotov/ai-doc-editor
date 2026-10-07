@@ -16,9 +16,9 @@ from difflib import SequenceMatcher
 
 from lxml import etree
 
-from ai_doc_reader.docx.reader import DocxDocument, own_runs, paragraph_text, q
-from ai_doc_reader.docx.redline import Redline
-from ai_doc_reader.models import Change, ChangeStatus, Edit
+from ai_doc_editor.docx.reader import DocxDocument, own_runs, paragraph_text, q
+from ai_doc_editor.docx.redline import Redline
+from ai_doc_editor.models import Change, ChangeStatus, Edit
 
 XML_SPACE = "{http://www.w3.org/XML/1998/namespace}space"
 _TEXT_TAGS = {"w:t", "w:tab", "w:br", "w:cr", "w:noBreakHyphen"}

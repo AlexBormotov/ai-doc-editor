@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import anthropic
 
-from ai_doc_reader.llm.base import LLMError, LLMProvider
+from ai_doc_editor.llm.base import LLMError, LLMProvider
 
 
 class AnthropicProvider(LLMProvider):

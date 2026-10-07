@@ -14,7 +14,7 @@ from pathlib import Path
 import pymupdf
 from pydantic import BaseModel
 
-from ai_doc_reader.soffice import convert as soffice_convert
+from ai_doc_editor.soffice import convert as soffice_convert
 
 
 class GateResult(BaseModel):

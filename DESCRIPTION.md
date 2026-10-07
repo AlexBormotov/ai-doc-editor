@@ -1,4 +1,4 @@
-# ai-doc-reader
+# ai-doc-editor
 
 Edit Word and PDF documents with an LLM without breaking their layout.
 
@@ -87,7 +87,7 @@ uv run poe serve
 CLI:
 
 ```bash
-uv run ai-doc-reader edit contract.docx -i "Replace Acme Corp with Contoso Ltd" -o contract.edited.docx
+uv run ai-doc-editor edit contract.docx -i "Replace Acme Corp with Contoso Ltd" -o contract.edited.docx
 ```
 
 ## Recommended local models

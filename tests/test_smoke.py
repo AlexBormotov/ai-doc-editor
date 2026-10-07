@@ -1,5 +1,5 @@
-import ai_doc_reader
+import ai_doc_editor
 
 
 def test_version():
-    assert ai_doc_reader.__version__
+    assert ai_doc_editor.__version__

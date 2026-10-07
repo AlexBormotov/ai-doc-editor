@@ -15,7 +15,7 @@ from pathlib import Path
 
 import httpx
 
-from ai_doc_reader.llm.base import LLMError, LLMProvider
+from ai_doc_editor.llm.base import LLMError, LLMProvider
 
 CLIS = ("claude", "codex", "agy")
 
@@ -27,7 +27,7 @@ def run_cli(cli: str, model: str, system: str, user: str, timeout: float) -> str
     exe = shutil.which(cli)
     if exe is None:
         raise LLMError(f"{cli} is not installed or not on PATH")
-    with tempfile.TemporaryDirectory(prefix=f"adr-{cli}-") as tmp:
+    with tempfile.TemporaryDirectory(prefix=f"ade-{cli}-") as tmp:
         stdin = None
         if cli == "claude":
             cmd = [

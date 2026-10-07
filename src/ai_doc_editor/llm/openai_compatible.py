@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import openai
 
-from ai_doc_reader.llm.base import LLMError, LLMProvider
+from ai_doc_editor.llm.base import LLMError, LLMProvider
 
 
 class OpenAICompatibleProvider(LLMProvider):

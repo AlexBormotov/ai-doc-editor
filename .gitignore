@@ -20,3 +20,7 @@ GRILL.md
 # Editors
 .idea/
 .vscode/
+
+# Local screenshots
+*.png
+!docs/images/*.png

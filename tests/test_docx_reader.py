@@ -1,4 +1,4 @@
-from ai_doc_reader.docx.reader import read_docx
+from ai_doc_editor.docx.reader import read_docx
 
 
 def test_report_segments_cover_body_tables_headers_textbox(fixtures):

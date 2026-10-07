@@ -22,12 +22,12 @@ import yaml
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT.parent / "src"))
 
-from ai_doc_reader.docx.reader import read_docx  # noqa: E402
-from ai_doc_reader.editor import edit_document  # noqa: E402
-from ai_doc_reader.llm.base import LLMError  # noqa: E402
-from ai_doc_reader.llm.registry import get_provider  # noqa: E402
-from ai_doc_reader.models import ChangeStatus  # noqa: E402
-from ai_doc_reader.presets import build_instruction  # noqa: E402
+from ai_doc_editor.docx.reader import read_docx  # noqa: E402
+from ai_doc_editor.editor import edit_document  # noqa: E402
+from ai_doc_editor.llm.base import LLMError  # noqa: E402
+from ai_doc_editor.llm.registry import get_provider  # noqa: E402
+from ai_doc_editor.models import ChangeStatus  # noqa: E402
+from ai_doc_editor.presets import build_instruction  # noqa: E402
 
 RESULTS = ROOT / "results"
 LANDED = (ChangeStatus.APPLIED, ChangeStatus.SHORTENED, ChangeStatus.SHRUNK)

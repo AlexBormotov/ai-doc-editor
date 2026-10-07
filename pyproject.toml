@@ -1,5 +1,5 @@
 [project]
-name = "ai-doc-reader"
+name = "ai-doc-editor"
 version = "0.1.0"
 description = "Edit Word and PDF documents with an LLM without breaking their layout"
 readme = "README.md"
@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.scripts]
-ai-doc-reader = "ai_doc_reader.cli:main"
+ai-doc-editor = "ai_doc_editor.cli:main"
 
 [dependency-groups]
 dev = [
@@ -37,7 +37,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/ai_doc_reader"]
+packages = ["src/ai_doc_editor"]
 
 [tool.ruff]
 line-length = 100
@@ -65,4 +65,4 @@ test-all = "pytest -m \"not live\""
 fixtures = "python evals/make_fixtures.py"
 eval = "python evals/run_invariants.py"
 eval-models = "python evals/run_models.py"
-serve = "uvicorn ai_doc_reader.api:app --host 127.0.0.1 --port 8000"
+serve = "uvicorn ai_doc_editor.api:app --host 127.0.0.1 --port 8000"

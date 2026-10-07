@@ -7,9 +7,9 @@ from datetime import UTC, datetime
 
 from lxml import etree
 
-from ai_doc_reader.docx.reader import q
+from ai_doc_editor.docx.reader import q
 
-AUTHOR = "AI Doc Reader"
+AUTHOR = "AI Doc Editor"
 
 
 class Redline:

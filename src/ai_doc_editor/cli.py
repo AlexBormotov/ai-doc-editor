@@ -1,4 +1,4 @@
-"""Command line: `ai-doc-reader edit FILE -i "..."` and `ai-doc-reader providers`."""
+"""Command line: `ai-doc-editor edit FILE -i "..."` and `ai-doc-editor providers`."""
 
 from __future__ import annotations
 
@@ -6,11 +6,11 @@ import argparse
 import sys
 from pathlib import Path
 
-from ai_doc_reader.editor import edit_document
-from ai_doc_reader.llm.registry import PROVIDERS, get_provider, list_models
-from ai_doc_reader.models import ChangeStatus
-from ai_doc_reader.presets import PRESETS, build_instruction
-from ai_doc_reader.settings import get_settings
+from ai_doc_editor.editor import edit_document
+from ai_doc_editor.llm.registry import PROVIDERS, get_provider, list_models
+from ai_doc_editor.models import ChangeStatus
+from ai_doc_editor.presets import PRESETS, build_instruction
+from ai_doc_editor.settings import get_settings
 
 
 def _edit(args: argparse.Namespace) -> int:
@@ -18,7 +18,7 @@ def _edit(args: argparse.Namespace) -> int:
     instruction = build_instruction(args.preset, args.instruction)
     provider = get_provider(args.provider or s.default_provider, args.model or s.default_model)
     src = Path(args.file)
-    out_dir = Path(args.out_dir) if args.out_dir else src.parent / f"{src.stem}.ai-doc-reader"
+    out_dir = Path(args.out_dir) if args.out_dir else src.parent / f"{src.stem}.ai-doc-editor"
 
     def progress(fraction: float, message: str) -> None:
         print(f"[{fraction:4.0%}] {message}", file=sys.stderr)
@@ -59,7 +59,7 @@ def _providers(_: argparse.Namespace) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="ai-doc-reader", description=__doc__)
+    parser = argparse.ArgumentParser(prog="ai-doc-editor", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     e = sub.add_parser("edit", help="edit a .docx, .doc or .pdf by instruction")
     e.add_argument("file")

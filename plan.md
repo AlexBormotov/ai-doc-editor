@@ -1,4 +1,4 @@
-# Plan: ai-doc-reader
+# Plan: ai-doc-editor
 
 Implements `intent.md` (REQ-001) per `spec.md`. Approver: alexvicbor. Deadline: end of 2026-10-07.
 
@@ -27,7 +27,7 @@ in the final report.
 
 ### 0. Repository skeleton
 Files: `pyproject.toml` (Python 3.12, deps from spec section 2, poe tasks), `.gitignore`,
-`.env.example`, `src/ai_doc_reader/__init__.py`, `tests/test_smoke.py`, `AGENTS.md`, `CLAUDE.md`,
+`.env.example`, `src/ai_doc_editor/__init__.py`, `tests/test_smoke.py`, `AGENTS.md`, `CLAUDE.md`,
 `.github/workflows/ci.yml`.
 `.gitignore` excludes `ai-factory-kit/`, `CONTEXT.md` and `GRILL.md` (client correspondence and
 private notes), `samples/private/`, `runs/`, `.env`.
@@ -79,7 +79,7 @@ Check: `uv run poe test`; `uv run pytest -m live -k ollama` passes.
 
 ### 7. Editor orchestration, presets, change report (AC-6, AC-7)
 Files: `editor.py`, `presets.py`, `report.py`, `cli.py`, `tests/test_editor.py`.
-Shortening loop of AC-5 wired here. CLI: `uv run ai-doc-reader edit IN -i "..." [--preset] [--provider] [--model] [--no-track] [--convert-to]`.
+Shortening loop of AC-5 wired here. CLI: `uv run ai-doc-editor edit IN -i "..." [--preset] [--provider] [--model] [--no-track] [--convert-to]`.
 Check: `uv run poe test`; `uv run poe eval` runs the deterministic suite (scripted provider over all
 fixtures with invariants) and exits 0.
 
@@ -136,7 +136,7 @@ proofread with `qwen3.5:9b` via the API) passed.
 
 | Step | Planned | Actual | Why |
 |---|---|---|---|
-| 3, 5 | invariant checks in `evals/invariants.py` | `src/ai_doc_reader/invariants.py` | the editor also uses them to stamp a "structure verified" result on every run, so they belong to the package; `evals/` imports them |
+| 3, 5 | invariant checks in `evals/invariants.py` | `src/ai_doc_editor/invariants.py` | the editor also uses them to stamp a "structure verified" result on every run, so they belong to the package; `evals/` imports them |
 | 3 | per-token ops | ops separated only by whitespace are merged | "Acme Corp" -> "Contoso Ltd" reads as one tracked replacement instead of two |
 | 4 | segment = PyMuPDF text block | segments rebuilt from lines (split at list markers, font/size change, vertical gap, side-by-side cells, x jumps) | PyMuPDF merges a heading with the paragraph below and all list items or table cells into one block (seen on `report_en.pdf`) |
 | 5 | F7: `insert_htmlbox` with `scale_low` | F7 holds, but the approach was replaced: words are wrapped with font metrics and set with `TextWriter` on the original baselines | Story adds its own margins and uses the fallback font's natural line height, so even the unchanged original text did not fit its box (scale 0.52-0.81 on every segment) |

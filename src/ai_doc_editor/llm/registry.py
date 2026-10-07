@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from ai_doc_reader.llm.anthropic_provider import AnthropicProvider
-from ai_doc_reader.llm.base import LLMError, LLMProvider
-from ai_doc_reader.llm.cli_provider import CLIS, CliProvider
-from ai_doc_reader.llm.openai_compatible import OpenAICompatibleProvider
-from ai_doc_reader.settings import Settings, get_settings
+from ai_doc_editor.llm.anthropic_provider import AnthropicProvider
+from ai_doc_editor.llm.base import LLMError, LLMProvider
+from ai_doc_editor.llm.cli_provider import CLIS, CliProvider
+from ai_doc_editor.llm.openai_compatible import OpenAICompatibleProvider
+from ai_doc_editor.settings import Settings, get_settings
 
 GOOGLE_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
 

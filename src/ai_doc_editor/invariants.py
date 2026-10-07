@@ -11,7 +11,7 @@ from pathlib import Path
 
 from lxml import etree
 
-from ai_doc_reader.docx.reader import NS, _story_parts, own_runs, paragraph_text, q, run_text
+from ai_doc_editor.docx.reader import NS, _story_parts, own_runs, paragraph_text, q, run_text
 
 _ALL_P = etree.XPath(".//w:p", namespaces=NS)
 _ALL_TBL = etree.XPath(".//w:tbl", namespaces=NS)
@@ -49,7 +49,7 @@ def rejected_text(p: etree._Element) -> str:
 
 def unchanged_regions(old: str, new: str) -> list[tuple[int, int, int]]:
     """(old_start, new_start, length) of the text a word-level edit leaves untouched."""
-    from ai_doc_reader.docx.writer import diff_ops
+    from ai_doc_editor.docx.writer import diff_ops
 
     regions, a, b = [], 0, 0
     for i1, i2, repl in diff_ops(old, new):
@@ -247,8 +247,8 @@ def check_pdf(original: Path, edited: Path, expected: dict[str, str]) -> list[st
     """
     import pymupdf
 
-    from ai_doc_reader.pdf.reader import read_pdf
-    from ai_doc_reader.pdf.writer import MIN_SCALE
+    from ai_doc_editor.pdf.reader import read_pdf
+    from ai_doc_editor.pdf.writer import MIN_SCALE
 
     errors: list[str] = []
     src = read_pdf(original)

@@ -25,4 +25,4 @@ ENV PATH="/app/.venv/bin:$PATH" \
 
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"
-CMD ["uvicorn", "ai_doc_reader.api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "ai_doc_editor.api:app", "--host", "0.0.0.0", "--port", "8000"]

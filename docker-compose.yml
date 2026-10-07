@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    image: ai-doc-reader:latest
+    image: ai-doc-editor:latest
     ports:
       - "127.0.0.1:${APP_PORT:-8000}:8000"
     env_file:

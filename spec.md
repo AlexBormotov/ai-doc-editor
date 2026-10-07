@@ -1,4 +1,4 @@
-# Spec: ai-doc-reader
+# Spec: ai-doc-editor
 
 Implements `intent.md` (REQ-001). Architecture document at the deployable-unit level: there is one
 unit, the `app` service. Component names below are the code symbol names; keep them in sync.
@@ -47,7 +47,7 @@ upload -> normalise (.doc -> .docx via soffice) -> parse -> segments
        -> previews (PDF pages rendered to PNG; DOCX via soffice -> PDF)
 ```
 
-Package layout (`src/ai_doc_reader/`): `models.py` (Segment, Edit, Change, ChangeReport),
+Package layout (`src/ai_doc_editor/`): `models.py` (Segment, Edit, Change, ChangeReport),
 `docx/` (`reader.py`, `writer.py`, `redline.py`), `pdf/` (`reader.py`, `writer.py`, `fonts.py`),
 `convert.py` (soffice, pdf2docx, `layout_gate`), `llm/` (`base.py`, `openai_compatible.py`,
 `anthropic_provider.py`, `cli_provider.py`, `registry.py`), `editor.py` (orchestration),
@@ -94,7 +94,7 @@ Response, validated with pydantic:
   old and new paragraph text. Unchanged characters stay in their original runs with their original
   `w:rPr`. Deleted characters are removed, or wrapped in `w:del` / `w:delText` when tracking.
   Inserted text becomes a new run that copies the `w:rPr` of the run at the insertion point, wrapped
-  in `w:ins` when tracking. Tracked changes carry `w:author="AI Doc Reader"`, `w:date` and unique
+  in `w:ins` when tracking. Tracked changes carry `w:author="AI Doc Editor"`, `w:date` and unique
   `w:id`.
 - Nothing outside the edited `w:p` children changes: no `w:pPr`, no `sectPr`, no styles part.
 

@@ -37,7 +37,7 @@ uv run python scripts/cli_bridge.py  # host bridge so Docker can use the claude/
   styles part, or anything outside the edited `w:p`. PDF: never move a block; new text goes on
   the original baselines inside `PdfSegment.avail` (the block widened horizontally into free
   space only, see `plan.md` Deviations).
-- **The invariant checks in `src/ai_doc_reader/invariants.py` are the oracle.** Every check has a
+- **The invariant checks in `src/ai_doc_editor/invariants.py` are the oracle.** Every check has a
   negative-control test. Do not weaken a tolerance or skip a check to make a test pass. If a check is wrong, say so and record it in `plan.md`.
 - Tests that need LibreOffice are marked `soffice`; tests that need a running model are marked
   `live`. `uv run poe test` must stay green without either.

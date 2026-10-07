@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pymupdf
 
-from ai_doc_reader.pdf.reader import PdfDocument, PdfSegment
+from ai_doc_editor.pdf.reader import PdfDocument, PdfSegment
 
 MIN_SCALE = 0.8  # AC-5: the font may shrink to no less than 80% of its original size
 _SCALES = [round(1 - i * 0.02, 2) for i in range(int((1 - MIN_SCALE) / 0.02) + 1)]

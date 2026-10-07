@@ -6,9 +6,9 @@ from pathlib import Path
 import pymupdf
 import pytest
 
-from ai_doc_reader.convert import layout_gate
-from ai_doc_reader.editor import edit_document
-from ai_doc_reader.llm.scripted import ScriptedProvider
+from ai_doc_editor.convert import layout_gate
+from ai_doc_editor.editor import edit_document
+from ai_doc_editor.llm.scripted import ScriptedProvider
 
 RULES = [("Acme", "Contoso")]
 

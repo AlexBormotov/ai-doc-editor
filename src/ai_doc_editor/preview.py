@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pymupdf
 
-from ai_doc_reader.soffice import SofficeError, convert, find_soffice
+from ai_doc_editor.soffice import SofficeError, convert, find_soffice
 
 
 def render_pages(

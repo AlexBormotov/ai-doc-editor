@@ -27,7 +27,7 @@ text stays inside the object it came from.
    count and table shape, section page setup (size, orientation, margins), headers and footers, and
    the run formatting of every unchanged character are identical to the input.
 2. **AC-2.** Edits in `.docx` can be emitted as tracked changes (`w:ins` / `w:del`, author
-   `AI Doc Reader`), so each edit can be accepted or rejected in Word. A UI switch controls this. It
+   `AI Doc Editor`), so each edit can be accepted or rejected in Word. A UI switch controls this. It
    is on by default.
 3. **AC-3.** A legacy `.doc` file is accepted. It is converted to `.docx` on input with LibreOffice
    headless and then handled as in AC-1.

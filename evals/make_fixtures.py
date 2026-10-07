@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "fixtures"
 sys.path.insert(0, str(ROOT.parent / "src"))
 
-from ai_doc_reader.soffice import convert, find_soffice  # noqa: E402
+from ai_doc_editor.soffice import convert, find_soffice  # noqa: E402
 
 W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 

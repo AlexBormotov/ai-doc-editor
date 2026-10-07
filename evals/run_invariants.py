@@ -13,10 +13,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT.parent / "src"))
 
-from ai_doc_reader.editor import edit_document  # noqa: E402
-from ai_doc_reader.llm.scripted import ScriptedProvider  # noqa: E402
-from ai_doc_reader.models import ChangeStatus  # noqa: E402
-from ai_doc_reader.soffice import find_soffice  # noqa: E402
+from ai_doc_editor.editor import edit_document  # noqa: E402
+from ai_doc_editor.llm.scripted import ScriptedProvider  # noqa: E402
+from ai_doc_editor.models import ChangeStatus  # noqa: E402
+from ai_doc_editor.soffice import find_soffice  # noqa: E402
 
 RULES = [
     ("Acme Corp", "Contoso Ltd"),

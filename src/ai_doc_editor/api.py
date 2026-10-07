@@ -11,14 +11,14 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, RedirectResponse
 
-from ai_doc_reader import __version__
-from ai_doc_reader.editor import SUPPORTED, DocumentError, edit_document
-from ai_doc_reader.llm.base import LLMError
-from ai_doc_reader.llm.registry import PROVIDERS, get_provider, list_models
-from ai_doc_reader.presets import PRESETS, build_instruction
-from ai_doc_reader.settings import get_settings
+from ai_doc_editor import __version__
+from ai_doc_editor.editor import SUPPORTED, DocumentError, edit_document
+from ai_doc_editor.llm.base import LLMError
+from ai_doc_editor.llm.registry import PROVIDERS, get_provider, list_models
+from ai_doc_editor.presets import PRESETS, build_instruction
+from ai_doc_editor.settings import get_settings
 
-app = FastAPI(title="ai-doc-reader", version=__version__)
+app = FastAPI(title="ai-doc-editor", version=__version__)
 _SAFE_NAME = re.compile(r"[^\w.\-]+", re.UNICODE)
 
 
@@ -125,7 +125,7 @@ def download(run_id: str, name: str) -> FileResponse:
 def _mount_ui() -> None:
     import gradio as gr
 
-    from ai_doc_reader.ui import build_ui
+    from ai_doc_editor.ui import build_ui
 
     gr.mount_gradio_app(app, build_ui(), path="/ui", allowed_paths=[str(runs_dir())])
 

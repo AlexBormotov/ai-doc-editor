@@ -14,7 +14,7 @@ from docx import Document as open_docx
 from docx.opc.constants import CONTENT_TYPE as CT
 from lxml import etree
 
-from ai_doc_reader.models import Segment
+from ai_doc_editor.models import Segment
 
 W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
 MC = "http://schemas.openxmlformats.org/markup-compatibility/2006"

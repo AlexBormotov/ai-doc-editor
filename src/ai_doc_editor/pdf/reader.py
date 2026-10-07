@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pymupdf
 
-from ai_doc_reader.models import Segment
+from ai_doc_editor.models import Segment
 
 _MARKER = re.compile(r"^(?:[•▪◦–—\-\*]|\d{1,3}[.)]|[a-zA-Z][.)])$")
 # A list item whose marker is part of the line's text ("• Design ...", "2. Elect ...").

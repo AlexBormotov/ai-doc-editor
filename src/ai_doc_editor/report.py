@@ -6,8 +6,8 @@ import html
 from difflib import SequenceMatcher
 from pathlib import Path
 
-from ai_doc_reader.docx.writer import _TOKEN
-from ai_doc_reader.models import ChangeReport, ChangeStatus
+from ai_doc_editor.docx.writer import _TOKEN
+from ai_doc_editor.models import ChangeReport, ChangeStatus
 
 _COLORS = {
     ChangeStatus.APPLIED: "#1a7f37",

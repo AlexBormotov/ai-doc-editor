@@ -1,4 +1,4 @@
-# ai-doc-reader
+# ai-doc-editor
 
 Edit Word and PDF documents with an LLM without breaking their layout.
 
@@ -49,7 +49,7 @@ different document.
      the **original baselines**, in the same font, size, colour and alignment. If it does not fit,
      the model is asked to shorten it, then the font may shrink to 80%; if it still does not fit,
      the original stays and the report says why. Blocks never move.
-5. **Prove it.** The structure check (`src/ai_doc_reader/invariants.py`) compares input and output:
+5. **Prove it.** The structure check (`src/ai_doc_editor/invariants.py`) compares input and output:
    - Word: paragraph and table counts, table shapes, section properties, every other package
      part, the full XML of every unedited paragraph, the formatting of every unchanged character,
      and that rejecting all tracked changes restores the original text.
@@ -106,10 +106,10 @@ and DOCX previews. It is found on `PATH`, in the default Windows location, or vi
 ### Command line
 
 ```bash
-uv run ai-doc-reader edit contract.docx -i "Replace Acme Corp with Contoso Ltd"
-uv run ai-doc-reader edit contract.pdf --preset anonymize --provider cli:claude --model sonnet
-uv run ai-doc-reader edit report.pdf --preset proofread --convert-to docx
-uv run ai-doc-reader providers
+uv run ai-doc-editor edit contract.docx -i "Replace Acme Corp with Contoso Ltd"
+uv run ai-doc-editor edit contract.pdf --preset anonymize --provider cli:claude --model sonnet
+uv run ai-doc-editor edit report.pdf --preset proofread --convert-to docx
+uv run ai-doc-editor providers
 ```
 
 Each run writes the edited file, `report.html` and `report.json` into an output folder.

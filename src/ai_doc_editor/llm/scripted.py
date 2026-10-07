@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 import re
 
-from ai_doc_reader.llm.base import LLMProvider
-from ai_doc_reader.llm.prompts import SEGMENTS_MARKER, parse_segments
+from ai_doc_editor.llm.base import LLMProvider
+from ai_doc_editor.llm.prompts import SEGMENTS_MARKER, parse_segments
 
 
 class ScriptedProvider(LLMProvider):

@@ -7,18 +7,18 @@ import shutil
 
 import gradio as gr
 
-from ai_doc_reader.editor import DocumentError, edit_document
-from ai_doc_reader.llm.base import LLMError
-from ai_doc_reader.llm.registry import PROVIDERS, get_provider, list_models
-from ai_doc_reader.models import ChangeStatus
-from ai_doc_reader.presets import PRESETS, build_instruction
-from ai_doc_reader.preview import render_pages
-from ai_doc_reader.settings import get_settings
+from ai_doc_editor.editor import DocumentError, edit_document
+from ai_doc_editor.llm.base import LLMError
+from ai_doc_editor.llm.registry import PROVIDERS, get_provider, list_models
+from ai_doc_editor.models import ChangeStatus
+from ai_doc_editor.presets import PRESETS, build_instruction
+from ai_doc_editor.preview import render_pages
+from ai_doc_editor.settings import get_settings
 
 _BODY = re.compile(r"<body>(.*)</body>", re.S)
 _STYLE = re.compile(r"<style>(.*?)</style>", re.S)
 
-INTRO = """# AI Doc Reader
+INTRO = """# AI Doc Editor
 Edit **Word** (`.docx`, `.doc`) and **PDF** documents with an LLM **without breaking the layout**.
 The model only sees text segments and returns changes for them; every change is written back into
 the object it came from, and a structure check proves that everything else is untouched."""
@@ -36,8 +36,8 @@ def _report_fragment(html_text: str) -> str:
     """The report page's body and styles, for embedding in the UI."""
     body = _BODY.search(html_text)
     style = _STYLE.search(html_text)
-    css = style.group(1).replace("body{", ".adr-report{") if style else ""
-    return f"<style>{css}</style><div class=adr-report>{body.group(1) if body else ''}</div>"
+    css = style.group(1).replace("body{", ".ade-report{") if style else ""
+    return f"<style>{css}</style><div class=ade-report>{body.group(1) if body else ''}</div>"
 
 
 def run(file, preset, instruction, provider, model, track, convert_to, progress=gr.Progress()):
@@ -49,7 +49,7 @@ def run(file, preset, instruction, provider, model, track, convert_to, progress=
     except (ValueError, LLMError) as e:
         raise gr.Error(str(e)) from e
 
-    from ai_doc_reader.api import new_run
+    from ai_doc_editor.api import new_run
 
     _run_id, run_dir, src = new_run(file)
     shutil.copyfile(file, src)
@@ -112,7 +112,7 @@ def run(file, preset, instruction, provider, model, track, convert_to, progress=
 
 def build_ui() -> gr.Blocks:
     s = get_settings()
-    with gr.Blocks(title="AI Doc Reader") as demo:
+    with gr.Blocks(title="AI Doc Editor") as demo:
         gr.Markdown(INTRO)
         with gr.Row():
             with gr.Column(scale=1, min_width=320):

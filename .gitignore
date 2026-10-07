@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+
+# Local secrets and data
+.env
+samples/private/
+runs/
+
+# Private notes and client correspondence, method kit (not part of this repo)
+ai-factory-kit/
+CONTEXT.md
+GRILL.md
+
+# Editors
+.idea/
+.vscode/

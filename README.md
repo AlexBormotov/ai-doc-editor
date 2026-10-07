@@ -16,6 +16,34 @@ Runs fully offline with local models (Ollama, LM Studio). OpenAI, Anthropic and 
 
 ![PDF: anonymisation in place](docs/images/pdf-anonymize.png)
 
+## Example: one paragraph of a real PDF, rewritten by a local model
+
+![AI Doc Editor UI: the first paragraph of an 11-page exam guide rewritten by qwen3.5:9b through Ollama](docs/images/screenshot-example.png)
+
+What the screenshot shows:
+
+- **Input:** an 11-page exam guide printed to PDF from a browser (every line is its own text
+  object, the fonts are embedded as Type3 subsets). No preset, one free-form instruction:
+  *"Make the first paragraph easier to understand."*
+- **Model:** `qwen3.5:9b` running locally in Ollama on a laptop GPU. Nothing leaves the
+  machine. The whole run took 27.7 s.
+- **Finding the target:** the model first saw only an outline of the document (segment IDs and
+  the start of each paragraph) and chose the segments the instruction is about: `p0/s4` and
+  `p0/s5`, the two paragraphs under "1. About This Certification". It then rewrote `p0/s4`, the
+  first one, and left `p0/s5` as it was: **1 segment changed, 0 rejected, 0 skipped**.
+- **Result (Before / After):** the first paragraph is shorter and simpler ("validates that an
+  individual can" became "proves you can", the list of skills became plain verbs) and now takes
+  4 lines instead of 5. The paragraph below it moved up by one line, in its original font,
+  because the section reflows. The heading "2. Purpose and Value of the Credential", the bullet
+  list, the title, the version line and the other 10 pages did not move by a single point.
+- **Proof:** "Structure check passed" means the program compared the output with the input
+  span by span: every untouched span has the same text and position, the moved paragraph sits
+  exactly one line higher and overlaps nothing, and images and graphics are unchanged.
+- **Honest limits, from the report:** the rewritten paragraph is set in a metric-similar sans
+  font, because the original Type3 font is a subset that cannot set new words
+  (`font_substituted`), and inline styling inside that paragraph is flattened
+  (`style_flattened`). The Changes tab shows the word-level diff of the edit.
+
 ## Why most "AI document editors" break formatting
 
 The usual approach converts the document to text or Markdown, asks the model to rewrite it, and

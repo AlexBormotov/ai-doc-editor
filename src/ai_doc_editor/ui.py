@@ -32,12 +32,28 @@ def _models(provider: str):
     return gr.Dropdown(choices=models, value=value)
 
 
+# The UI is dark; the standalone report.html stays light. These rules come after the report's
+# own styles and win over Gradio's text colours.
+_DARK = """
+.ade-report{background:#0b0f19!important;color:#e6edf3!important;padding:16px;border-radius:8px}
+.ade-report *{color:#e6edf3!important;background:transparent}
+.ade-report td,.ade-report th{border-bottom:1px solid #30363d!important}
+.ade-report del{background:#4a1d22!important;color:#ffa198!important}
+.ade-report ins{background:#163a24!important;color:#7ee787!important}
+.ade-report .st{color:#fff!important}
+.ade-report .notes,.ade-report .prop{color:#8b949e!important}
+.ade-report .ok{color:#3fb950!important}
+.ade-report .bad{color:#f85149!important}
+"""
+
+
 def _report_fragment(html_text: str) -> str:
-    """The report page's body and styles, for embedding in the UI."""
+    """The report page's body and styles, for embedding in the dark UI."""
     body = _BODY.search(html_text)
     style = _STYLE.search(html_text)
     css = style.group(1).replace("body{", ".ade-report{") if style else ""
-    return f"<style>{css}</style><div class=ade-report>{body.group(1) if body else ''}</div>"
+    content = body.group(1) if body else ""
+    return f"<style>{css}{_DARK}</style><div class=ade-report>{content}</div>"
 
 
 def run(file, preset, instruction, provider, model, track, convert_to, progress=gr.Progress()):

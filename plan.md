@@ -112,8 +112,25 @@ Check: every command in README's quick start is run once from a clean clone.
 
 ## Evidence
 
-Each step's commit message names the step. The final report lists, per AC, the check that goes red
-when that AC is violated, and any AC without such a check.
+Each step's commit message names the step. Review log, written backward from the criteria: per AC,
+the check that goes red when the AC is violated. Run on 2026-10-07: `uv run poe test-all`
+(55 passed) and `uv run poe eval` (9/9) in a clean clone; Docker smoke (`/health`, `/ui`, PDF
+proofread with `qwen3.5:9b` via the API) passed.
+
+| AC | Check that goes red | Negative control |
+|---|---|---|
+| AC-1 | `check_docx` in `tests/test_docx_writer.py::test_edits_preserve_structure`, `tests/test_editor.py::test_docx_end_to_end`, `evals/run_invariants.py` | `test_negative_control_formatting_change_is_detected` (edited and unedited paragraph) |
+| AC-2 | `check_docx(tracked=True)`: rejecting all revisions must restore the original; `test_replacement_inherits_formatting_of_replaced_text` checks `w:ins` author | covered by the same negative control |
+| AC-3 | `test_legacy_doc_is_converted_on_input`, `.doc` rows of `poe eval` | none |
+| AC-4 | `check_pdf` in `tests/test_pdf.py::test_edits_preserve_layout`, `test_pdf_end_to_end`, `poe eval` | `test_negative_control_layout_break_is_detected` (moved untouched text, stray text, hidden white text) |
+| AC-5 | `test_pdf_too_long_edit_is_shortened_by_second_call`, `test_slightly_long_text_is_shrunk_within_limit`, `test_too_long_text_is_refused_not_moved`; `check_pdf` size floor | the hidden-text control covers the size/colour checks' wiring only for colour; size floor has no dedicated control |
+| AC-6 | `test_skipped_unknown_and_split_are_reported`, `test_invalid_response_rejects_batch_and_leaves_document_unchanged`, `test_llm_contract.py` (retry, schema) | none |
+| AC-7 | `test_docx_end_to_end` (report JSON), statuses asserted across `test_editor.py` | none |
+| AC-8 | `tests/test_convert.py` (gate passes, failing gate marks the file, word moved is reported) | `test_gate_passes_identical_and_flags_moved_text` |
+| AC-9 | `test_registry_knows_every_provider`; live: `pytest -m live` (Ollama, `claude`, `codex`, `agy` passed); OpenAI/Anthropic/Google API not run (no keys); LM Studio not run (server down) | none |
+| AC-10 | `tests/test_api.py`; Docker smoke above | none |
+| AC-11 | `poe eval` (deterministic) and `evals/results/summary.md` (measured) | the eval runs every check above |
+| AC-12 | limits are settings (`MAX_PAGES=200`, `MAX_UPLOAD_MB=100`) | **uncovered**: no test uploads a 200-page or 100 MB file |
 
 ## Deviations
 

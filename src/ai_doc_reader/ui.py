@@ -62,6 +62,7 @@ def run(file, preset, instruction, provider, model, track, convert_to, progress=
             track_changes=track,
             progress=lambda f, m: progress(f, desc=m),
             convert_to=None if convert_to == "none" else convert_to,
+            scope_from=instruction,
         )
     except (DocumentError, LLMError) as e:
         raise gr.Error(str(e)) from e
@@ -77,6 +78,12 @@ def run(file, preset, instruction, provider, model, track, convert_to, progress=
         f"**{landed}** segment(s) changed, **{r.count(ChangeStatus.REJECTED)}** rejected, "
         f"**{r.count(ChangeStatus.SKIPPED)}** skipped · {r.duration_s:.1f} s · "
         f"{r.provider} / {r.model}",
+        (
+            f"🎯 Instruction applied to **{len(r.scope)}** segment(s) chosen by the model: "
+            + ", ".join(f"`{i}`" for i in r.scope[:8])
+        )
+        if r.scope
+        else "🎯 Instruction applied to the whole document.",
         "✅ **Structure check passed**: untouched content is unchanged."
         if not r.violations
         else "❌ **Structure check failed:** " + "; ".join(r.violations[:5]),
@@ -110,9 +117,11 @@ def build_ui() -> gr.Blocks:
         with gr.Row():
             with gr.Column(scale=1, min_width=320):
                 file = gr.File(label="Document", file_types=[".docx", ".doc", ".pdf"])
-                preset = gr.Dropdown(["(none)", *PRESETS], value="proofread", label="Preset")
+                preset = gr.Dropdown(
+                    ["(none)", *PRESETS], value="(none)", label="Preset (optional)"
+                )
                 instruction = gr.Textbox(
-                    label="Instruction (added to the preset)",
+                    label="Instruction (combined with the preset, if one is chosen)",
                     placeholder="e.g. Replace Acme Corp with Contoso Ltd",
                     lines=3,
                 )

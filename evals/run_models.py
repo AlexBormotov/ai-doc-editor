@@ -56,6 +56,8 @@ def run_checks(text: str, changed: int, checks: dict) -> list[str]:
         ratio = sum("а" <= c.lower() <= "я" or c in "ёЁ" for c in letters) / max(1, len(letters))
         if ratio > checks["max_cyrillic_ratio"]:
             failed.append(f"cyrillic ratio {ratio:.0%}")
+    if "min_changed" in checks and changed < checks["min_changed"]:
+        failed.append(f"changed {changed} segments (< {checks['min_changed']}: nothing done)")
     if "max_changed" in checks and changed > checks["max_changed"]:
         failed.append(f"changed {changed} segments (> {checks['max_changed']}: over-editing)")
     return failed
@@ -69,7 +71,11 @@ def eval_model(provider_key: str, model: str, tasks: list[dict]) -> dict:
         with tempfile.TemporaryDirectory() as tmp:
             try:
                 result = edit_document(
-                    ROOT / "fixtures" / task["fixture"], instruction, provider, Path(tmp)
+                    ROOT / "fixtures" / task["fixture"],
+                    instruction,
+                    provider,
+                    Path(tmp),
+                    scope_from=task.get("instruction"),
                 )
             except LLMError as e:
                 rows.append({"task": task["id"], "success": False, "error": str(e)[:300]})

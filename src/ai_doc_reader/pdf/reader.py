@@ -16,6 +16,8 @@ import pymupdf
 from ai_doc_reader.models import Segment
 
 _MARKER = re.compile(r"^(?:[•▪◦–—\-\*]|\d{1,3}[.)]|[a-zA-Z][.)])$")
+# A list item whose marker is part of the line's text ("• Design ...", "2. Elect ...").
+_ITEM_START = re.compile(r"^(?:[•▪◦‣–—*\-]|\d{1,3}[.)])\s")
 _SYMBOL_FONTS = re.compile(r"symbol|wingding|dingbat", re.I)
 
 
@@ -202,16 +204,41 @@ def _free_space(page: pymupdf.Page, segs: list[PdfSegment], obstacles: list[pymu
             seg.avail = pymupdf.Rect(r.x0, r.y0, right, r.y1)
 
 
-def _page_segments(page: pymupdf.Page, page_no: int) -> list[tuple[PdfSegment, str | None]]:
+def _ends_paragraph(prev: Line, line: Line, current: list[Line]) -> bool:
+    """True when the first word of `line` would have fitted at the end of `prev`.
+
+    A typesetter only breaks a line early at the end of a paragraph, so this separates a short
+    last line from the ordinary variation of ragged-right text.
+    """
+    right = max(prev.bbox[2], line.bbox[2], *(ln.bbox[2] for ln in current))
+    words = line.text.split()
+    if not words or not line.text:
+        return False
+    char_w = (line.bbox[2] - line.bbox[0]) / max(1, len(line.text))
+    needed = (len(words[0]) + 1) * char_w  # the word plus a space
+    return prev.bbox[2] + needed < right - 1
+
+
+def segment_lines(
+    blocks: list[dict], page_no: int, page_width: float
+) -> tuple[list[tuple[PdfSegment, str | None]], list[pymupdf.Rect]]:
+    """Group the text lines of a page into segments; returns segments and list-marker rects.
+
+    Lines are taken across block boundaries, because some producers (browsers printing to PDF)
+    emit every line as its own block. A new segment starts at a list marker, a change of font or
+    size, a vertical gap larger than the segment's line spacing, a line beside the previous one
+    (next column or cell), a jump of the left edge, or, at a block boundary, after a line that
+    ends a paragraph.
+    """
     out: list[tuple[PdfSegment, str | None]] = []
     markers: list[pymupdf.Rect] = []
-    data = page.get_text("dict", flags=pymupdf.TEXTFLAGS_TEXT)
-    for block in data["blocks"]:
+    current: list[Line] = []
+    current_skip: str | None = None
+    after_marker = False
+    prev_block = -1
+    for block_no, block in enumerate(blocks):
         if block.get("type") != 0:
             continue
-        current: list[Line] = []
-        current_skip: str | None = None
-        after_marker = False
         for raw in block["lines"]:
             line = _make_line(raw)
             if line is None:
@@ -227,28 +254,45 @@ def _page_segments(page: pymupdf.Page, page_no: int) -> list[tuple[PdfSegment, s
                 prev = current[-1]
                 gap = line.bbox[1] - prev.bbox[3]
                 height = prev.bbox[3] - prev.bbox[1]
+                # Paragraph gap: larger than the spacing already seen inside this segment, or,
+                # for a segment's second line, larger than most leadings (0.8 of a line).
+                if len(current) > 1:
+                    base = current[-1].bbox[1] - current[-2].bbox[3]
+                    big_gap = gap > base * 1.3 + 1
+                else:
+                    big_gap = gap > 0.8 * height
                 side_by_side = line.bbox[1] < prev.bbox[3] - 0.5 * height  # next column/cell
                 # Line 2 may sit left of line 1 (first-line indent); otherwise left edges match.
                 x_jump = abs(line.bbox[0] - prev.bbox[0]) > 3 and not (
                     len(current) == 1 and 0 < prev.bbox[0] - line.bbox[0] <= 50
                 )
+                paragraph_end = block_no != prev_block and _ends_paragraph(prev, line, current)
                 if (
                     after_marker
                     or line.marker
+                    or _ITEM_START.match(line.text)
                     or line.style.key != current[0].style.key
-                    or gap > 0.5 * height
+                    or big_gap
                     or side_by_side
                     or x_jump
+                    or paragraph_end
                     or skip != current_skip
                 ):
-                    out.append((_segment(page_no, current, page.rect.width), current_skip))
+                    out.append((_segment(page_no, current, page_width), current_skip))
                     current = []
             if not current:
                 current_skip = skip
             current.append(line)
             after_marker = False
-        if current:
-            out.append((_segment(page_no, current, page.rect.width), current_skip))
+            prev_block = block_no
+    if current:
+        out.append((_segment(page_no, current, page_width), current_skip))
+    return out, markers
+
+
+def _page_segments(page: pymupdf.Page, page_no: int) -> list[tuple[PdfSegment, str | None]]:
+    blocks = page.get_text("dict", flags=pymupdf.TEXTFLAGS_TEXT)["blocks"]
+    out, markers = segment_lines(blocks, page_no, page.rect.width)
     _free_space(page, [seg for seg, _ in out], markers)
     return out
 

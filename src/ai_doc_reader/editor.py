@@ -12,8 +12,22 @@ from ai_doc_reader.docx.reader import read_docx
 from ai_doc_reader.docx.writer import apply_edits
 from ai_doc_reader.invariants import check_docx, check_pdf
 from ai_doc_reader.llm.base import InvalidResponseError, LLMError, LLMProvider
-from ai_doc_reader.llm.prompts import SYSTEM, edit_request, shorten_request
-from ai_doc_reader.models import Change, ChangeReport, ChangeStatus, Edit, EditBatch, Segment
+from ai_doc_reader.llm.prompts import (
+    SCOPE_SYSTEM,
+    SYSTEM,
+    edit_request,
+    scope_request,
+    shorten_request,
+)
+from ai_doc_reader.models import (
+    Change,
+    ChangeReport,
+    ChangeStatus,
+    Edit,
+    EditBatch,
+    Scope,
+    Segment,
+)
 from ai_doc_reader.pdf.reader import read_pdf
 from ai_doc_reader.pdf.writer import PdfWriter
 from ai_doc_reader.report import write_html, write_json
@@ -69,6 +83,30 @@ def _batches(segments: list[Segment], max_chars: int) -> list[list[Segment]]:
     return [b for b in batches if b]
 
 
+OUTLINE_MAX_CHARS = 20_000  # keeps the scope request inside an 8k-token context
+
+
+def resolve_scope(
+    provider: LLMProvider, instruction: str, segments: list[Segment]
+) -> list[str] | None:
+    """Ids the instruction targets, or None when it applies to the whole document.
+
+    The model sees an outline (id and the start of each segment), not the document. Unknown ids
+    are dropped; an empty or failed answer means the whole document.
+    """
+    width = max(20, min(60, OUTLINE_MAX_CHARS // max(1, len(segments)) - 12))
+    outline = [(x.id, x.text) for x in segments]
+    try:
+        reply = provider.complete_json(
+            SCOPE_SYSTEM, scope_request(instruction, outline, width), Scope
+        )
+    except LLMError:
+        return None
+    known = {x.id for x in segments}
+    ids = [i for i in reply.ids if i in known]
+    return ids if reply.scope == "ids" and ids else None
+
+
 def request_edits(
     provider: LLMProvider,
     instruction: str,
@@ -80,13 +118,17 @@ def request_edits(
     edits: list[Edit] = []
     rejected: list[Change] = []
     batches = _batches(segments, max_chars)
+    first = 0
     for n, batch in enumerate(batches):
+        position = (first + 1, first + len(batch), len(segments))
+        first += len(batch)
         if progress:
             progress(n / len(batches), f"Model: batch {n + 1} of {len(batches)}")
         by_id = {s.id: s for s in batch}
         payload = [{"id": s.id, "text": s.text} for s in batch]
         try:
-            reply = provider.complete_json(SYSTEM, edit_request(instruction, payload), EditBatch)
+            request = edit_request(instruction, payload, position)
+            reply = provider.complete_json(SYSTEM, request, EditBatch)
         except InvalidResponseError as e:
             rejected += [
                 Change(
@@ -110,6 +152,20 @@ def request_edits(
                         new_text=e.new_text,
                         status=ChangeStatus.REJECTED,
                         reason="unknown_id",
+                    )
+                )
+            elif not e.new_text.strip() and by_id[e.id].text.strip():
+                # Emptying a segment is how a model merges text into a neighbour; text must
+                # never disappear silently.
+                latest.pop(e.id, None)
+                rejected.append(
+                    Change(
+                        id=e.id,
+                        old_text=by_id[e.id].text,
+                        new_text="",
+                        status=ChangeStatus.REJECTED,
+                        reason="emptied",
+                        page=by_id[e.id].page,
                     )
                 )
             elif e.new_text != by_id[e.id].text:
@@ -189,7 +245,13 @@ def edit_document(
     progress: Progress | None = None,
     settings: Settings | None = None,
     convert_to: str | None = None,
+    scope_from: str | None = None,
 ) -> EditResult:
+    """Edit `src` by `instruction`.
+
+    `scope_from`: the user's free-form instruction, if any. When given, the model first picks
+    the segments it applies to ("the first paragraph"), and only those are edited.
+    """
     s = settings or get_settings()
     started = time.monotonic()
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -223,6 +285,13 @@ def edit_document(
         if not x.editable and x.skip_reason != "fallback_copy"
     ]
 
+    if scope_from and scope_from.strip():
+        if progress:
+            progress(0.02, "Model: finding the part of the document the instruction targets")
+        report.scope = resolve_scope(provider, scope_from, editable)
+        if report.scope:
+            targets = set(report.scope)
+            editable = [x for x in editable if x.id in targets]
     edits, rejected = request_edits(provider, instruction, editable, s.batch_chars, progress)
     report.changes += rejected
     if progress:

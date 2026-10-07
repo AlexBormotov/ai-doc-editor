@@ -31,6 +31,7 @@ def _edit(args: argparse.Namespace) -> int:
         track_changes=not args.no_track,
         progress=progress,
         convert_to=args.convert_to,
+        scope_from=args.instruction,
     )
     r = result.report
     print(f"output:  {result.output}")
@@ -40,6 +41,8 @@ def _edit(args: argparse.Namespace) -> int:
         for failure in result.gate.failures:
             print(f"  {failure}")
     print(f"report:  {result.report_html}")
+    if r.scope:
+        print(f"scope:   {len(r.scope)} segment(s) chosen by the model: {', '.join(r.scope[:8])}")
     print(" ".join(f"{st.value}={r.count(st)}" for st in ChangeStatus))
     if r.violations:
         print("structure check FAILED:", *r.violations, sep="\n  ")

@@ -44,3 +44,19 @@
     absent: ["recieve", "beleive", "adress"]
     present: ["receive", "believe", "address"]
     max_changed: 2
+
+- id: first_paragraph_docx
+  fixture: report_en.docx
+  instruction: Make the first paragraph easier to understand.
+  checks:
+    present: ["Quarterly Report for Acme Corp", "We recieve many questions"]
+    min_changed: 1
+    max_changed: 1
+
+- id: first_paragraph_pdf
+  fixture: report_en.pdf
+  instruction: Make the first paragraph easier to understand.
+  checks:
+    present: ["Quarterly Report for Acme Corp", "We recieve many questions"]
+    min_changed: 1
+    max_changed: 1

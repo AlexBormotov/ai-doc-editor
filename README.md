@@ -28,13 +28,18 @@ different document.
 **The model never sees or writes a whole document.**
 
 1. **Parse into segments.** Every Word paragraph (body, tables, headers, footers, text boxes) and
-   every PDF text block gets a stable ID. PDF blocks are rebuilt from lines, because PDF engines
-   merge headings with paragraphs and table cells with each other.
-2. **Ask for edits, not documents.** The model receives `[{id, text}]` and returns only what it
+   every PDF paragraph gets a stable ID. PDF paragraphs are rebuilt from text lines, because PDF
+   producers split and merge text unpredictably (a browser prints every line as its own block;
+   other tools merge a heading with its paragraph or table cells with each other).
+2. **Find the target.** For a free-form instruction ("make the first paragraph simpler"), the
+   model first sees an outline of the document (segment IDs and the start of each text) and
+   picks the segments the instruction is about. Only those are edited. Presets such as
+   proofreading apply to the whole document.
+3. **Ask for edits, not documents.** The model receives `[{id, text}]` and returns only what it
    changed: `{"edits": [{id, new_text}]}`, validated against a JSON schema. Unknown IDs and invalid
-   answers are rejected and reported, never guessed at. Document text is treated as data, not as
-   instructions.
-3. **Write back in place.**
+   answers are rejected and reported, never guessed at; so is an edit that empties a segment.
+   Document text is treated as data, not as instructions.
+4. **Write back in place.**
    - **Word:** a word-level diff between old and new text. Unchanged characters keep their
      original runs and formatting; only the changed words are replaced, as `w:ins` / `w:del`
      tracked changes (or directly). Nothing outside the edited runs is touched: no paragraph or
@@ -44,7 +49,7 @@ different document.
      the **original baselines**, in the same font, size, colour and alignment. If it does not fit,
      the model is asked to shorten it, then the font may shrink to 80%; if it still does not fit,
      the original stays and the report says why. Blocks never move.
-4. **Prove it.** The structure check (`src/ai_doc_reader/invariants.py`) compares input and output:
+5. **Prove it.** The structure check (`src/ai_doc_reader/invariants.py`) compares input and output:
    - Word: paragraph and table counts, table shapes, section properties, every other package
      part, the full XML of every unedited paragraph, the formatting of every unchanged character,
      and that rejecting all tracked changes restores the original text.
@@ -153,31 +158,32 @@ names and a prompt.
 
 ## Measured results
 
-`uv run poe eval-models` runs six tasks from `evals/tasks.yaml` through the full pipeline and
+`uv run poe eval-models` runs eight tasks from `evals/tasks.yaml` through the full pipeline and
 checks each output deterministically: replace a company name (DOCX, PDF), proofread (DOCX, PDF),
-anonymise a Russian contract, translate it to English. Over-editing fails a task too.
+anonymise a Russian contract, translate it to English, and rewrite only "the first paragraph"
+(DOCX, PDF). Over-editing fails a task too.
 
 | Provider | Model | Tasks passed | Structure check | Tasks with invalid JSON | Invented IDs | Total time |
 |---|---|---|---|---|---|---|
-| cli:claude | `haiku` | 6/6 | 6/6 | 0 | 0 | 116 s |
-| ollama | `gemma4:12b` | 5/6 | 6/6 | 0 | 0 | 122 s |
-| ollama | `qwen3.5:4b` | 4/6 | 6/6 | 0 | 0 | 74 s |
-| ollama | `qwen3.5:9b` | 5/6 | 6/6 | 0 | 0 | 98 s |
+| cli:claude | `haiku` | 8/8 | 8/8 | 0 | 0 | 266 s |
+| ollama | `gemma4:12b` | 5/8 | 8/8 | 0 | 0 | 194 s |
+| ollama | `qwen3.5:4b` | 5/8 | 8/8 | 0 | 0 | 170 s |
+| ollama | `qwen3.5:9b` | 7/8 | 8/8 | 0 | 0 | 161 s |
 
 What failed, from `evals/results/*.json`:
 
-- `qwen3.5:9b` and `gemma4:12b`, replace names (DOCX): also rewrote "Acme North" /
+- `qwen3.5:9b`, `gemma4:12b`, `qwen3.5:4b`, replace names (DOCX): also rewrote "Acme North" /
   "Acme South" in the table, which the instruction did not ask for (13 segments changed,
   11 allowed).
-- `qwen3.5:4b`, anonymise: left a surname in place; translate: about 6% of letters stayed
-  Cyrillic.
+- `gemma4:12b` and `qwen3.5:4b`, "make the first paragraph easier" (DOCX, PDF): picked the
+  second paragraph instead of the first.
 - No model produced invalid JSON or invented a segment ID, and the structure check passed on
   every run: when a model is wrong, it is wrong in content, which the tracked changes and the
   report make visible.
 
-**Recommendation:** `qwen3.5:9b` as the local default (fits in 8 GB VRAM; `gemma4:12b` scores
-the same but is slower on 8 GB because part of it is offloaded to the CPU); `qwen3.5:4b` when
-speed matters more than accuracy; an API or subscription model for production-grade results.
+**Recommendation:** `qwen3.5:9b` as the local default (best local score, fits in 8 GB VRAM);
+an API or subscription model for production-grade results. `gemma4:12b` is slower on 8 GB
+(partly offloaded to the CPU) and worse at locating parts of a document.
 
 Hardware: RTX 4070 Laptop (8 GB), 32 GB RAM. Ollama 0.30.7 for the qwen runs, 0.40.0 for
 `gemma4:12b` (which needs 0.35 or newer). Times include model loading.

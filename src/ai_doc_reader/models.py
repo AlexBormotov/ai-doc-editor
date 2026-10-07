@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -32,6 +33,13 @@ class EditBatch(BaseModel):
     """Model response schema (spec.md 4.1)."""
 
     edits: list[Edit] = Field(default_factory=list)
+
+
+class Scope(BaseModel):
+    """Which segments a free-form instruction applies to (scope resolution step)."""
+
+    scope: Literal["all", "ids"]
+    ids: list[str] = Field(default_factory=list)
 
 
 class ChangeStatus(StrEnum):
@@ -67,6 +75,7 @@ class ChangeReport(BaseModel):
     changes: list[Change] = Field(default_factory=list)
     violations: list[str] = Field(default_factory=list)  # structure invariant failures
     conversion: dict | None = None  # layout gate result when a conversion was requested
+    scope: list[str] | None = None  # segment ids the instruction was limited to, if any
 
     def count(self, status: ChangeStatus) -> int:
         return sum(1 for c in self.changes if c.status == status)

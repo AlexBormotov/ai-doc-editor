@@ -1,12 +1,12 @@
 {
   "provider": "cli:claude",
   "model": "haiku",
-  "tasks": 6,
-  "passed": 6,
-  "structure_ok": 6,
+  "tasks": 8,
+  "passed": 8,
+  "structure_ok": 8,
   "invalid_json_tasks": 0,
   "invented_ids": 0,
-  "total_seconds": 115.7,
+  "total_seconds": 265.6,
   "rows": [
     {
       "task": "replace_names_docx",
@@ -18,7 +18,7 @@
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 20.8
+      "seconds": 26.6
     },
     {
       "task": "proofread_docx",
@@ -30,7 +30,7 @@
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 11.7
+      "seconds": 8.7
     },
     {
       "task": "anonymize_ru_docx",
@@ -42,7 +42,7 @@
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 13.9
+      "seconds": 12.7
     },
     {
       "task": "translate_en_docx",
@@ -54,7 +54,7 @@
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 28.3
+      "seconds": 71.4
     },
     {
       "task": "replace_names_pdf",
@@ -66,7 +66,7 @@
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 29.7
+      "seconds": 37.4
     },
     {
       "task": "proofread_pdf",
@@ -78,7 +78,31 @@
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 11.3
+      "seconds": 10.7
+    },
+    {
+      "task": "first_paragraph_docx",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 1,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 27.0
+    },
+    {
+      "task": "first_paragraph_pdf",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 1,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 71.1
     }
   ]
 }

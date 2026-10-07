@@ -146,3 +146,42 @@ def test_negative_control_layout_break_is_detected(fixtures, tmp_path, breakage)
     out = tmp_path / "broken.pdf"
     doc.doc.save(str(out))
     assert check_pdf(src, out, expected), "invariant check missed a layout break"
+
+
+def _block(text, x0, y0, x1, size=10.5, font="Body"):
+    span = {
+        "text": text,
+        "font": font,
+        "size": size,
+        "color": 0,
+        "flags": 4,
+        "bbox": (x0, y0, x1, y0 + size * 1.07),
+        "origin": (x0, y0 + size * 0.85),
+    }
+    return {"type": 0, "lines": [{"spans": [span], "dir": (1.0, 0.0)}]}
+
+
+def test_one_line_per_block_pdfs_are_joined_into_paragraphs():
+    """Regression: browser-printed PDFs emit every line as its own block."""
+    from ai_doc_reader.pdf.reader import segment_lines
+
+    blocks = [
+        _block("1. About This Certification", 54, 182, 273, size=18, font="Head"),
+        _block("The certification validates that an individual can design,", 54, 219, 531),
+        _block("build, and deliver solutions on the platform. It is intended for", 54, 238, 541),
+        _block("practitioners in an architect role.", 54, 255, 300),
+        _block("This guide is the authoritative reference for candidates. It", 54, 279, 530),
+        _block("describes the exam format.", 54, 296, 250),
+        _block("• Design and prototype solutions", 54, 330, 400),
+        _block("• Select appropriate models", 54, 347, 380),
+    ]
+    segs, _ = segment_lines(blocks, 0, 595)
+    texts = [" ".join(ln.text for ln in seg.lines) for seg, _ in segs]
+    assert texts == [
+        "1. About This Certification",
+        "The certification validates that an individual can design, build, and deliver "
+        "solutions on the platform. It is intended for practitioners in an architect role.",
+        "This guide is the authoritative reference for candidates. It describes the exam format.",
+        "• Design and prototype solutions",
+        "• Select appropriate models",
+    ]

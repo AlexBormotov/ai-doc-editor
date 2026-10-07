@@ -1,24 +1,26 @@
 {
   "provider": "ollama",
   "model": "qwen3.5:4b",
-  "tasks": 6,
-  "passed": 4,
-  "structure_ok": 6,
+  "tasks": 8,
+  "passed": 5,
+  "structure_ok": 8,
   "invalid_json_tasks": 0,
   "invented_ids": 0,
-  "total_seconds": 74.3,
+  "total_seconds": 170.5,
   "rows": [
     {
       "task": "replace_names_docx",
-      "success": true,
-      "failed_checks": [],
+      "success": false,
+      "failed_checks": [
+        "changed 13 segments (> 11: over-editing)"
+      ],
       "structure_ok": true,
       "violations": [],
-      "changed": 11,
+      "changed": 13,
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 28.8
+      "seconds": 59.1
     },
     {
       "task": "proofread_docx",
@@ -30,35 +32,31 @@
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 4.2
+      "seconds": 15.3
     },
     {
       "task": "anonymize_ru_docx",
-      "success": false,
-      "failed_checks": [
-        "still matches /\u0418\u0432\u0430\u043d\u043e\u0432/"
-      ],
+      "success": true,
+      "failed_checks": [],
       "structure_ok": true,
       "violations": [],
       "changed": 7,
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 11.4
+      "seconds": 16.5
     },
     {
       "task": "translate_en_docx",
-      "success": false,
-      "failed_checks": [
-        "cyrillic ratio 6%"
-      ],
+      "success": true,
+      "failed_checks": [],
       "structure_ok": true,
       "violations": [],
-      "changed": 9,
+      "changed": 11,
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 19.1
+      "seconds": 40.8
     },
     {
       "task": "replace_names_pdf",
@@ -66,11 +64,11 @@
       "failed_checks": [],
       "structure_ok": true,
       "violations": [],
-      "changed": 3,
+      "changed": 2,
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 6.3
+      "seconds": 11.6
     },
     {
       "task": "proofread_pdf",
@@ -82,7 +80,36 @@
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 4.5
+      "seconds": 6.5
+    },
+    {
+      "task": "first_paragraph_docx",
+      "success": false,
+      "failed_checks": [
+        "missing 'We recieve many questions'"
+      ],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 1,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 9.4
+    },
+    {
+      "task": "first_paragraph_pdf",
+      "success": false,
+      "failed_checks": [
+        "missing 'We recieve many questions'",
+        "changed 2 segments (> 1: over-editing)"
+      ],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 2,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 11.3
     }
   ]
 }

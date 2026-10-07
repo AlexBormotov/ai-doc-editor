@@ -1,12 +1,12 @@
 {
   "provider": "ollama",
   "model": "gemma4:12b",
-  "tasks": 6,
+  "tasks": 8,
   "passed": 5,
-  "structure_ok": 6,
+  "structure_ok": 8,
   "invalid_json_tasks": 0,
   "invented_ids": 0,
-  "total_seconds": 122.3,
+  "total_seconds": 194.3,
   "rows": [
     {
       "task": "replace_names_docx",
@@ -20,7 +20,7 @@
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 40.7
+      "seconds": 65.2
     },
     {
       "task": "proofread_docx",
@@ -32,7 +32,7 @@
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 5.8
+      "seconds": 10.0
     },
     {
       "task": "anonymize_ru_docx",
@@ -44,7 +44,7 @@
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 23.8
+      "seconds": 28.9
     },
     {
       "task": "translate_en_docx",
@@ -56,7 +56,7 @@
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 37.8
+      "seconds": 33.9
     },
     {
       "task": "replace_names_pdf",
@@ -68,7 +68,7 @@
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 8.2
+      "seconds": 11.0
     },
     {
       "task": "proofread_pdf",
@@ -80,7 +80,35 @@
       "invalid_response_segments": 0,
       "invented_ids": 0,
       "does_not_fit": 0,
-      "seconds": 6.0
+      "seconds": 9.2
+    },
+    {
+      "task": "first_paragraph_docx",
+      "success": false,
+      "failed_checks": [
+        "missing 'We recieve many questions'"
+      ],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 1,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 19.6
+    },
+    {
+      "task": "first_paragraph_pdf",
+      "success": false,
+      "failed_checks": [
+        "missing 'We recieve many questions'"
+      ],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 1,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 16.5
     }
   ]
 }

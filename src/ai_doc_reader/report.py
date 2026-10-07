@@ -71,6 +71,11 @@ def write_html(report: ChangeReport, path: Path) -> None:
             )
         if g.get("note"):
             conv += f"<p class=notes>{html.escape(g['note'])}</p>"
+    if report.scope:
+        conv = (
+            f"<p>Instruction applied to {len(report.scope)} segment(s) chosen by the model: "
+            f"{html.escape(', '.join(report.scope))}</p>" + conv
+        )
     counts = " · ".join(f"{s.value}: {report.count(s)}" for s in ChangeStatus if report.count(s))
     page = f"""<!doctype html><html lang=en><head><meta charset=utf-8>
 <meta name=viewport content="width=device-width, initial-scale=1">

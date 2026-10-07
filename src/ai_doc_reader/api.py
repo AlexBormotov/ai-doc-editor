@@ -89,6 +89,7 @@ async def edit(
             None,
             s,
             None if convert_to in ("", "none") else convert_to,
+            instruction,
         )
     except DocumentError as e:
         raise HTTPException(422, str(e)) from e

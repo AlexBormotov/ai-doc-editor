@@ -2,6 +2,7 @@ import json
 
 import pytest
 
+from ai_doc_reader.docx.reader import read_docx
 from ai_doc_reader.editor import DocumentError, edit_document
 from ai_doc_reader.llm.base import LLMProvider
 from ai_doc_reader.llm.prompts import parse_segments
@@ -93,3 +94,67 @@ def test_legacy_doc_is_converted_on_input(fixtures, tmp_path):
     result = edit_document(fixtures / "contract_ru.doc", "x", ScriptedProvider(RULES), tmp_path)
     assert result.output.suffix == ".docx"
     assert result.report.violations == []
+
+
+def test_emptied_segment_is_rejected_not_applied(fixtures, tmp_path):
+    """Regression: a model 'merges' a line into its neighbour by emptying it."""
+
+    class Emptier(LLMProvider):
+        key = "fake"
+
+        def __init__(self):
+            super().__init__("m")
+
+        def complete_text(self, system, user, schema):
+            seg = next(s for s in parse_segments(user) if s["text"].startswith("Contact"))
+            return json.dumps({"edits": [{"id": seg["id"], "new_text": "  "}]})
+
+    result = edit_document(fixtures / "layout.pdf", "x", Emptier(), tmp_path)
+    change = next(c for c in result.report.changes if c.old_text.startswith("Contact"))
+    assert (change.status, change.reason) == (ChangeStatus.REJECTED, "emptied")
+    assert result.report.violations == []
+
+
+class ScopeThenScripted(LLMProvider):
+    """First call answers the scope request, later calls behave like ScriptedProvider."""
+
+    key = "fake"
+
+    def __init__(self, scope_reply):
+        super().__init__("m")
+        self.scope_reply = scope_reply
+        self.inner = ScriptedProvider([("Acme Corp", "Contoso Ltd")])
+        self.edit_batches = []
+
+    def complete_text(self, system, user, schema):
+        if "OUTLINE:" in user:
+            return json.dumps(self.scope_reply)
+        self.edit_batches.append([s["id"] for s in parse_segments(user)])
+        return self.inner.complete_text(system, user, schema)
+
+
+def test_targeted_instruction_edits_only_the_chosen_segments(fixtures, tmp_path):
+    doc_ids = [s.id for s in read_docx(fixtures / "report_en.docx").segments if s.editable]
+    target = doc_ids[2]
+    provider = ScopeThenScripted({"scope": "ids", "ids": [target, "made/up/1"]})
+    result = edit_document(
+        fixtures / "report_en.docx", "x", provider, tmp_path, scope_from="the first paragraph"
+    )
+    assert result.report.scope == [target]  # the invented id is dropped
+    assert provider.edit_batches == [[target]]
+    assert result.report.violations == []
+
+
+def test_scope_all_or_failure_means_whole_document(fixtures, tmp_path):
+    provider = ScopeThenScripted({"scope": "all", "ids": []})
+    result = edit_document(
+        fixtures / "report_en.docx", "x", provider, tmp_path, scope_from="replace everywhere"
+    )
+    assert result.report.scope is None
+    assert sum(len(b) for b in provider.edit_batches) > 10
+
+    provider = ScopeThenScripted({"scope": "ids", "ids": ["nope"]})
+    result = edit_document(
+        fixtures / "report_en.docx", "x", provider, tmp_path / "2", scope_from="x"
+    )
+    assert result.report.scope is None

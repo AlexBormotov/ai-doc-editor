@@ -40,6 +40,7 @@ unit, the `app` service. Component names below are the code symbol names; keep t
 
 ```
 upload -> normalise (.doc -> .docx via soffice) -> parse -> segments
+       -> [free-form instruction] resolve_scope(): the model picks target ids from an outline
        -> batch segments -> provider.complete_json() -> validate edits
        -> writer applies edits in place -> change report
        -> [optional] convert -> layout_gate -> result or "layout not verified"
@@ -71,6 +72,13 @@ Response, validated with pydantic:
 - An `id` not in the batch: that edit is dropped, status `rejected`, reason `unknown_id`.
 - Invalid JSON or schema: one retry with the validation error appended. If it fails again, every
   segment of the batch is `rejected` with reason `invalid_response`.
+- Each batch states its position (`segments 1-40 of 244`) so positional words can be read.
+- An empty `new_text` for a non-empty segment is `rejected`, reason `emptied`: emptying a
+  segment is how a model merges text into a neighbour, and text must not vanish silently.
+- Scope (free-form instructions only, presets are global): before editing, the model gets an
+  outline (`id | first ~60 characters`, capped at 20 000 characters) and answers
+  `{"scope": "all" | "ids", "ids": [...]}`. Only the chosen segments are sent for editing.
+  Unknown ids are dropped; an empty or failed answer means the whole document.
 - `new_text` must not contain newlines for DOCX paragraphs. A newline makes the edit `rejected`,
   because a paragraph split is a structural change.
 - Document text is untrusted input. The system prompt states that segment text is data and that
@@ -92,9 +100,12 @@ Response, validated with pydantic:
 
 ### 4.3 PDF writer (AC-4, AC-5)
 
-- Segments (`PdfSegment`) are rebuilt from the lines of `page.get_text("dict")`: a new segment
-  starts at a list marker, a change of dominant font or size, a vertical gap over half a line,
-  a line beside the previous one (next column or cell), or a jump of the left edge. PyMuPDF's own
+- Segments (`PdfSegment`) are rebuilt from the lines of `page.get_text("dict")`, across block
+  boundaries (browser-printed PDFs put every line in its own block): a new segment
+  starts at a list marker (a separate span or a leading `•`/`1.` in the text), a change of
+  dominant font or size, a vertical gap larger than the segment's own line spacing, a line
+  beside the previous one (next column or cell), a jump of the left edge, or, at a block
+  boundary, after a line the next line's first word would have fitted on (a paragraph end). PyMuPDF's own
   blocks merge headings, list items and table cells.
 - `PdfSegment.avail` is the segment rectangle widened horizontally into free space only: up to the
   nearest text, list marker, image or drawing on the same lines, inside any enclosing drawing

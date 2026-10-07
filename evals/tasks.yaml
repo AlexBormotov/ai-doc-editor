@@ -1,0 +1,46 @@
+# Model eval tasks. Each task runs the full pipeline on a fixture; success is decided by
+# deterministic checks on the output text (no LLM judge). See evals/run_models.py.
+- id: replace_names_docx
+  fixture: report_en.docx
+  instruction: Replace the company name "Acme Corp" with "Contoso Ltd" everywhere. Change nothing else.
+  checks:
+    absent: ["Acme Corp"]
+    present: ["Contoso Ltd"]
+    max_changed: 11
+
+- id: proofread_docx
+  fixture: report_en.docx
+  preset: proofread
+  checks:
+    absent: ["recieve", "beleive", "adress"]
+    present: ["receive", "believe", "address"]
+    max_changed: 2
+
+- id: anonymize_ru_docx
+  fixture: contract_ru.docx
+  preset: anonymize
+  checks:
+    absent_regex: ['\+7 \d{3}', '@\w+\.example', 'Иванов', 'Смирнов']
+    present: ["ООО «Ромашка»", "ООО «Василёк»"]
+
+- id: translate_en_docx
+  fixture: contract_ru.docx
+  preset: translate_en
+  checks:
+    max_cyrillic_ratio: 0.05
+
+- id: replace_names_pdf
+  fixture: layout.pdf
+  instruction: Replace the company name "Acme Corp" with "Contoso Ltd" everywhere. Change nothing else.
+  checks:
+    absent: ["Acme Corp"]
+    present: ["Contoso Ltd"]
+    max_changed: 3
+
+- id: proofread_pdf
+  fixture: report_en.pdf
+  preset: proofread
+  checks:
+    absent: ["recieve", "beleive", "adress"]
+    present: ["receive", "believe", "address"]
+    max_changed: 2

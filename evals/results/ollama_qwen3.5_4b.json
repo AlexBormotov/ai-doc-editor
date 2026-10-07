@@ -1,0 +1,88 @@
+{
+  "provider": "ollama",
+  "model": "qwen3.5:4b",
+  "tasks": 6,
+  "passed": 4,
+  "structure_ok": 6,
+  "invalid_json_tasks": 0,
+  "invented_ids": 0,
+  "total_seconds": 74.3,
+  "rows": [
+    {
+      "task": "replace_names_docx",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 11,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 28.8
+    },
+    {
+      "task": "proofread_docx",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 1,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 4.2
+    },
+    {
+      "task": "anonymize_ru_docx",
+      "success": false,
+      "failed_checks": [
+        "still matches /\u0418\u0432\u0430\u043d\u043e\u0432/"
+      ],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 7,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 11.4
+    },
+    {
+      "task": "translate_en_docx",
+      "success": false,
+      "failed_checks": [
+        "cyrillic ratio 6%"
+      ],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 9,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 19.1
+    },
+    {
+      "task": "replace_names_pdf",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 3,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 6.3
+    },
+    {
+      "task": "proofread_pdf",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 1,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 4.5
+    }
+  ]
+}

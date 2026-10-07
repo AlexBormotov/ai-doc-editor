@@ -1,0 +1,86 @@
+{
+  "provider": "ollama",
+  "model": "qwen3.5:9b",
+  "tasks": 6,
+  "passed": 5,
+  "structure_ok": 6,
+  "invalid_json_tasks": 0,
+  "invented_ids": 0,
+  "total_seconds": 98.3,
+  "rows": [
+    {
+      "task": "replace_names_docx",
+      "success": false,
+      "failed_checks": [
+        "changed 13 segments (> 11: over-editing)"
+      ],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 13,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 38.6
+    },
+    {
+      "task": "proofread_docx",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 1,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 4.7
+    },
+    {
+      "task": "anonymize_ru_docx",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 5,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 16.2
+    },
+    {
+      "task": "translate_en_docx",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 11,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 24.5
+    },
+    {
+      "task": "replace_names_pdf",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 3,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 8.6
+    },
+    {
+      "task": "proofread_pdf",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 1,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 5.7
+    }
+  ]
+}

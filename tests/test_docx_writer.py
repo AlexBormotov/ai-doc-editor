@@ -130,3 +130,21 @@ def test_tracked_output_opens_in_libreoffice(fixtures, tmp_path):
     doc.save(out)
     pdf = convert(out, "pdf", tmp_path)
     assert pdf.stat().st_size > 0
+
+
+def test_full_rewrite_of_mixed_format_paragraph_passes_structure_check(fixtures, tmp_path):
+    """Regression: a translation rewrites every word of a paragraph with bold runs."""
+    src = fixtures / "contract_ru.docx"
+    doc = read_docx(src)
+    seg = next(s for s in doc.segments if s.text.startswith("ООО «Ромашка»"))
+    new = (
+        "JSC «Romashka», represented by its General Director Ivanov Petr Sergeevich, acting on "
+        "the basis of the Charter, hereinafter the «Supplier», and JSC «Vasilek», hereinafter "
+        "the «Buyer», have concluded this contract."
+    )
+    for tracked in (True, False):
+        d = read_docx(src)
+        apply_edits(d, [Edit(id=seg.id, new_text=new)], tracked)
+        out = tmp_path / f"out-{tracked}.docx"
+        d.save(out)
+        assert check_docx(src, out, {seg.id: new}, tracked) == []

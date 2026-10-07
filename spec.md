@@ -27,7 +27,7 @@ unit, the `app` service. Component names below are the code symbol names; keep t
 | API | FastAPI |
 | UI | Gradio, mounted into the FastAPI app at `/ui` (one process) |
 | DOCX | `python-docx` for reading, `lxml` for run-level and tracked-change XML |
-| PDF | PyMuPDF (`pymupdf`) + `pymupdf-fonts` (Noto, Cyrillic coverage) |
+| PDF | PyMuPDF (`pymupdf`); `pymupdf-fonts` only to build fixtures |
 | PDF to DOCX | `pdf2docx` |
 | DOC to DOCX, DOCX to PDF | LibreOffice headless (`soffice`) |
 | Schemas, config | `pydantic`, `pydantic-settings` |
@@ -92,27 +92,34 @@ Response, validated with pydantic:
 
 ### 4.3 PDF writer (AC-4, AC-5)
 
-- Segments are text blocks from `page.get_text("dict")`. A block is the unit sent to the model,
-  because lines cut sentences apart.
-- Only blocks with an edit are touched. For each one: the dominant span style (font, size, colour,
-  flags) is taken from the block; alignment (left, centre, right, justified) is inferred from line
-  positions; each original span rectangle gets a redaction with no fill, applied with
-  `images=PDF_REDACT_IMAGE_NONE` and `graphics=PDF_REDACT_LINE_ART_NONE`, so images and vector art
-  stay; the new text is placed with `page.insert_htmlbox(block_rect, ..., scale_low=0.8)`.
-- Font: the embedded font is reused when it is not a subset. Otherwise a `pymupdf-fonts` Noto face is
-  chosen by serif, mono, bold and italic flags. The report records the substitution.
-- Fit (AC-5): insert at scale 1.0. If it does not fit, ask the model once to shorten to
-  `floor(len(old) * fit_ratio)` characters. If it still does not fit, allow scale down to 0.8.
-  If that fails, restore the original text and set status `rejected`, reason `does_not_fit`.
-- A block with mixed styles is written with the dominant style. The report records
+- Segments (`PdfSegment`) are rebuilt from the lines of `page.get_text("dict")`: a new segment
+  starts at a list marker, a change of dominant font or size, a vertical gap over half a line,
+  a line beside the previous one (next column or cell), or a jump of the left edge. PyMuPDF's own
+  blocks merge headings, list items and table cells.
+- `PdfSegment.avail` is the segment rectangle widened horizontally into free space only: up to the
+  nearest text, list marker, image or drawing on the same lines, inside any enclosing drawing
+  (table cell, shaded box), never beyond the page's text area. Never widened vertically.
+- Only segments with an edit are touched (`PdfWriter`). The dominant span style (font, size,
+  colour, flags) and the alignment inferred from line positions are kept. Each original span gets
+  a redaction with no fill, applied with `images=PDF_REDACT_IMAGE_NONE` and
+  `graphics=PDF_REDACT_LINE_ART_NONE`. The new text is wrapped with the font's metrics and set
+  with `TextWriter` on the original baselines (justified lines word by word); it may use
+  baselines down to the original last one, never below.
+- Font: the embedded font is reused when it is not a subset. Otherwise a built-in URW face
+  (`tiro`, `helv`, `cour` and their bold/italic variants, Cyrillic included) is chosen by name and
+  flags. The report records the substitution.
+- Fit (AC-5): scale 1.0 first. If it does not fit, ask the model once to shorten to the old
+  length; then allow the font to shrink in 2% steps down to `MIN_SCALE` = 0.8. If nothing fits,
+  the original text stays and the status is `rejected`, reason `does_not_fit`.
+- A segment with mixed styles is written with the dominant style; the report records
   `style_flattened`.
 
 ### 4.4 Layout gate (AC-8)
 
-`layout_gate(source_pdf, candidate_pdf, tol_pt) -> GateResult`. DOCX is rendered to PDF with
-soffice first. Checks: equal page count; equal page size per page; content margins
-(the bbox union of text and drawings) within 2 pt; for every source block, a candidate block with
-the same normalised text whose bbox is within `tol_pt` (default 5 pt). The result lists each
+`layout_gate(source_pdf, candidate_pdf, tol_pt, target) -> GateResult`. A DOCX result is
+rendered to PDF with soffice first; DOCX -> PDF output is the reference rendering itself (DR-7).
+Checks: equal page count; equal page size per page; content margins (the bbox union of words)
+within 2 pt; the same words in the same order, each within `tol_pt` (default 5 pt). The result lists each
 failure with page, block text excerpt and offset.
 
 ### 4.5 Providers (AC-9)

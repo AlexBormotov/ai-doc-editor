@@ -7,7 +7,6 @@ by `evals/run_invariants.py`, and by the editor to stamp a "structure verified" 
 from __future__ import annotations
 
 import zipfile
-from difflib import SequenceMatcher
 from pathlib import Path
 
 from lxml import etree
@@ -46,6 +45,21 @@ def rejected_text(p: etree._Element) -> str:
             elif child.tag in (q("w:br"), q("w:cr")):
                 out.append("\n")
     return "".join(out)
+
+
+def unchanged_regions(old: str, new: str) -> list[tuple[int, int, int]]:
+    """(old_start, new_start, length) of the text a word-level edit leaves untouched."""
+    from ai_doc_reader.docx.writer import diff_ops
+
+    regions, a, b = [], 0, 0
+    for i1, i2, repl in diff_ops(old, new):
+        if i1 > a:
+            regions.append((a, b, i1 - a))
+        b += (i1 - a) + len(repl)
+        a = i2
+    if len(old) > a:
+        regions.append((a, b, len(old) - a))
+    return regions
 
 
 def char_formats(p: etree._Element) -> list[tuple[str, bytes]]:
@@ -186,15 +200,12 @@ def check_docx(
             # or otherwise new formatting introduced by an edit).
             if {f for _, f in fb} - {f for _, f in fa}:
                 errors.append(f"{seg_id}: edit introduced formatting not in the original")
-            sm = SequenceMatcher(None, [c for c, _ in fa], [c for c, _ in fb], autojunk=False)
-            for blk in sm.get_matching_blocks():
-                for k in range(blk.size):
-                    if fa[blk.a + k][1] != fb[blk.b + k][1]:
-                        errors.append(f"{seg_id}: formatting of unchanged text changed")
-                        break
-                else:
-                    continue
-                break
+            # "Unchanged text" is what the word-level diff of spec.md 4.2 leaves equal; a
+            # character diff would pair stray matches (quotes, commas) across rewritten runs.
+            for a0, b0, n in unchanged_regions(old, got):
+                if [x[1] for x in fa[a0 : a0 + n]] != [x[1] for x in fb[b0 : b0 + n]]:
+                    errors.append(f"{seg_id}: formatting of unchanged text changed")
+                    break
     return errors
 
 

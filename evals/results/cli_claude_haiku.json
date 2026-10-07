@@ -1,0 +1,84 @@
+{
+  "provider": "cli:claude",
+  "model": "haiku",
+  "tasks": 6,
+  "passed": 6,
+  "structure_ok": 6,
+  "invalid_json_tasks": 0,
+  "invented_ids": 0,
+  "total_seconds": 115.7,
+  "rows": [
+    {
+      "task": "replace_names_docx",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 11,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 20.8
+    },
+    {
+      "task": "proofread_docx",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 1,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 11.7
+    },
+    {
+      "task": "anonymize_ru_docx",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 7,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 13.9
+    },
+    {
+      "task": "translate_en_docx",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 11,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 28.3
+    },
+    {
+      "task": "replace_names_pdf",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 2,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 29.7
+    },
+    {
+      "task": "proofread_pdf",
+      "success": true,
+      "failed_checks": [],
+      "structure_ok": true,
+      "violations": [],
+      "changed": 1,
+      "invalid_response_segments": 0,
+      "invented_ids": 0,
+      "does_not_fit": 0,
+      "seconds": 11.3
+    }
+  ]
+}

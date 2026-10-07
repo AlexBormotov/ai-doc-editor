@@ -14,8 +14,6 @@ Runs fully offline with local models (Ollama, LM Studio). OpenAI, Anthropic and 
 
 ![Word: proofreading as tracked changes](docs/images/docx-redline.png)
 
-![PDF: anonymisation in place](docs/images/pdf-anonymize.png)
-
 ## Example: one paragraph of a real PDF, rewritten by a local model
 
 ![AI Doc Editor UI: the first paragraph of an 11-page exam guide rewritten by qwen3.5:9b through Ollama](docs/images/screenshot-example.png)

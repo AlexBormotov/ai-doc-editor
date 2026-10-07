@@ -76,13 +76,27 @@ def _table_shape(tbl: etree._Element) -> list[list[tuple[str, str]]]:
 
 
 def _entries(root: etree._Element, names: set[str]) -> list[tuple]:
-    """Index entries as a sorted list; a content-type Default for an unused extension is moot."""
-    used = {n.rsplit(".", 1)[-1].lower() for n in names}
-    return sorted(
-        (child.tag, tuple(sorted(child.attrib.items())))
-        for child in root
-        if not (child.tag.endswith("Default") and child.get("Extension", "").lower() not in used)
-    )
+    """What a package index means, independent of how it is written.
+
+    `[Content_Types].xml`: the effective content type of every part (an Override wins over the
+    extension Default; unused Defaults and redundant Overrides do not matter).
+    `.rels`: the relationships as a sorted set.
+    """
+    if root.tag.endswith("}Types"):
+        defaults = {
+            c.get("Extension", "").lower(): c.get("ContentType")
+            for c in root
+            if c.tag.endswith("Default")
+        }
+        overrides = {
+            c.get("PartName"): c.get("ContentType") for c in root if c.tag.endswith("Override")
+        }
+        return sorted(
+            (n, overrides.get(f"/{n}") or defaults.get(n.rsplit(".", 1)[-1].lower()))
+            for n in names
+            if not n.endswith("/")
+        )
+    return sorted((child.tag, tuple(sorted(child.attrib.items()))) for child in root)
 
 
 def _non_story_parts_equal(a: Path, b: Path, story_names: set[str]) -> list[str]:

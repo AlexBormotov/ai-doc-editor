@@ -1,0 +1,20 @@
+services:
+  app:
+    build: .
+    image: ai-doc-reader:latest
+    ports:
+      - "127.0.0.1:${APP_PORT:-8000}:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Ollama and LM Studio run on the host, not in this compose project.
+      OLLAMA_BASE_URL: http://host.docker.internal:11434/v1
+      LMSTUDIO_BASE_URL: http://host.docker.internal:1234/v1
+      # Subscription CLIs via scripts/cli_bridge.py on the host (optional)
+      CLI_BRIDGE_URL: ${CLI_BRIDGE_URL:-}
+      CLI_BRIDGE_TOKEN: ${CLI_BRIDGE_TOKEN:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # needed on Linux; Docker Desktop has it built in
+    volumes:
+      - ./runs:/app/runs

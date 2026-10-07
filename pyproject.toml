@@ -46,6 +46,9 @@ extend-exclude = ["ai-factory-kit", "*.md"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
 
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.File", "fastapi.Form", "gradio.Progress"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [

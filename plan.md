@@ -117,4 +117,7 @@ when that AC is violated, and any AC without such a check.
 
 ## Deviations
 
-_None yet._
+| Step | Planned | Actual | Why |
+|---|---|---|---|
+| 3, 5 | invariant checks in `evals/invariants.py` | `src/ai_doc_reader/invariants.py` | the editor also uses them to stamp a "structure verified" result on every run, so they belong to the package; `evals/` imports them |
+| 3 | per-token ops | ops separated only by whitespace are merged | "Acme Corp" -> "Contoso Ltd" reads as one tracked replacement instead of two |

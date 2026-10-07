@@ -74,7 +74,7 @@ You need an LLM backend. For local models, install [Ollama](https://ollama.com) 
 yourself and pull a model:
 
 ```bash
-ollama pull qwen3.5:9b     # default; qwen3.5:4b is faster, see "Measured results"
+ollama pull qwen3.5:9b     # default; also tested: qwen3.5:4b, gemma4:12b (see "Measured results")
 ```
 
 ### Docker (includes LibreOffice)
@@ -160,24 +160,27 @@ anonymise a Russian contract, translate it to English. Over-editing fails a task
 | Provider | Model | Tasks passed | Structure check | Tasks with invalid JSON | Invented IDs | Total time |
 |---|---|---|---|---|---|---|
 | cli:claude | `haiku` | 6/6 | 6/6 | 0 | 0 | 116 s |
+| ollama | `gemma4:12b` | 5/6 | 6/6 | 0 | 0 | 122 s |
 | ollama | `qwen3.5:4b` | 4/6 | 6/6 | 0 | 0 | 74 s |
 | ollama | `qwen3.5:9b` | 5/6 | 6/6 | 0 | 0 | 98 s |
 
 What failed, from `evals/results/*.json`:
 
-- `qwen3.5:9b`, replace names (DOCX): also rewrote "Acme North" / "Acme South" in the table,
-  which the instruction did not ask for (13 segments changed, 11 allowed).
+- `qwen3.5:9b` and `gemma4:12b`, replace names (DOCX): also rewrote "Acme North" /
+  "Acme South" in the table, which the instruction did not ask for (13 segments changed,
+  11 allowed).
 - `qwen3.5:4b`, anonymise: left a surname in place; translate: about 6% of letters stayed
   Cyrillic.
 - No model produced invalid JSON or invented a segment ID, and the structure check passed on
   every run: when a model is wrong, it is wrong in content, which the tracked changes and the
   report make visible.
 
-**Recommendation:** `qwen3.5:9b` as the local default (fits in 8 GB VRAM); `qwen3.5:4b` when speed
-matters more than accuracy; an API or subscription model for production-grade results.
+**Recommendation:** `qwen3.5:9b` as the local default (fits in 8 GB VRAM; `gemma4:12b` scores
+the same but is slower on 8 GB because part of it is offloaded to the CPU); `qwen3.5:4b` when
+speed matters more than accuracy; an API or subscription model for production-grade results.
 
-Hardware: RTX 4070 Laptop (8 GB), 32 GB RAM, Ollama 0.30.7. Times include model loading.
-`gemma4:12b` needs Ollama 0.35 or newer.
+Hardware: RTX 4070 Laptop (8 GB), 32 GB RAM. Ollama 0.30.7 for the qwen runs, 0.40.0 for
+`gemma4:12b` (which needs 0.35 or newer). Times include model loading.
 
 ## Development
 

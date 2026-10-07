@@ -1,3 +1,8 @@
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
 import pymupdf
 import pytest
 
@@ -6,6 +11,15 @@ from ai_doc_reader.editor import edit_document
 from ai_doc_reader.llm.scripted import ScriptedProvider
 
 RULES = [("Acme", "Contoso")]
+
+
+def _font_installed(name: str) -> bool:
+    if sys.platform == "win32":
+        return any(Path("C:/Windows/Fonts").glob(f"{name.lower()}*"))
+    if shutil.which("fc-list"):
+        out = subprocess.run(["fc-list"], capture_output=True, text=True).stdout
+        return name.lower() in out.lower()
+    return False
 
 
 def test_gate_passes_identical_and_flags_moved_text(fixtures, tmp_path):
@@ -27,6 +41,10 @@ def test_gate_passes_identical_and_flags_moved_text(fixtures, tmp_path):
 
 
 @pytest.mark.soffice
+@pytest.mark.skipif(
+    not _font_installed("Cambria"),
+    reason="the fixture uses Cambria; with a substitute font the gate correctly fails",
+)
 def test_pdf_to_docx_passes_gate_on_simple_document(fixtures, tmp_path):
     result = edit_document(
         fixtures / "contract_ru.pdf", "x", ScriptedProvider(RULES), tmp_path, convert_to="docx"

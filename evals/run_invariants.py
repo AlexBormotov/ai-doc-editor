@@ -24,6 +24,7 @@ RULES = [
     ("recieve", "receive"),
     ("beleive", "believe"),
     ("adress", "address"),
+    ("an individual can design, build and deliver", "a person can design, build, test and deliver"),
     ("указаные", "указанные"),
     ("Иванов[а-яА-Я. ]*?(?=,)", "[ФИО]"),
     (r"\+7 \d{3} \d{3}-\d{2}-\d{2}", "[ТЕЛЕФОН]"),

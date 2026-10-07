@@ -87,7 +87,7 @@ def test_edits_preserve_layout(fixtures, tmp_path, name):
     writer.apply()
     out = tmp_path / name
     writer.save(out)
-    assert check_pdf(src, out, expected) == []
+    assert check_pdf(src, out, expected, writer.moved, writer.boxes) == []
 
 
 def test_too_long_text_is_refused_not_moved(fixtures):
@@ -185,3 +185,79 @@ def test_one_line_per_block_pdfs_are_joined_into_paragraphs():
         "• Design and prototype solutions",
         "• Select appropriate models",
     ]
+
+
+# -- reflow inside a section ---------------------------------------------------------------
+
+LONGER = (
+    "The certification confirms that a person can design, build and deliver production-grade "
+    "AI solutions from the first prototype to a system that runs every day. It is meant for "
+    "practitioners in an architect role who choose models, connect them to enterprise systems, "
+    "and take responsibility for evaluation, security and governance of what they ship."
+)
+SHORTER = "The certification shows that a person can build production AI systems."
+
+
+def _reflow(fixtures, tmp_path, text):
+    src = fixtures / "sections.pdf"
+    doc = read_pdf(src)
+    writer = PdfWriter(doc)
+    scale = writer.stage("p0/s1", text)
+    writer.apply()
+    out = tmp_path / "out.pdf"
+    writer.save(out)
+    return src, out, writer, scale
+
+
+def _line_tops(path, prefix):
+    page = pymupdf.open(str(path))[0]
+    return [
+        round(ln["bbox"][1], 1)
+        for b in page.get_text("dict")["blocks"]
+        for ln in b.get("lines", [])
+        if "".join(s["text"] for s in ln["spans"]).startswith(prefix)
+    ]
+
+
+def test_longer_paragraph_pushes_the_rest_of_its_section_down(fixtures, tmp_path):
+    src, out, writer, scale = _reflow(fixtures, tmp_path, LONGER)
+    assert scale == 1.0
+    (_page, _clip, dy), *_ = writer.moved
+    assert dy > 10  # the next paragraph moved down by at least one line
+    assert _line_tops(out, "This guide")[0] > _line_tops(src, "This guide")[0] + 10
+    assert _line_tops(out, "2. Purpose") == _line_tops(src, "2. Purpose")  # next section stays
+    assert check_pdf(src, out, {"p0/s1": LONGER}, writer.moved, writer.boxes) == []
+
+
+def test_shorter_paragraph_pulls_the_rest_of_its_section_up(fixtures, tmp_path):
+    src, out, writer, _ = _reflow(fixtures, tmp_path, SHORTER)
+    assert writer.moved and writer.moved[0][2] < -10
+    assert _line_tops(out, "2. Purpose") == _line_tops(src, "2. Purpose")
+    assert check_pdf(src, out, {"p0/s1": SHORTER}, writer.moved, writer.boxes) == []
+
+
+def test_section_never_runs_into_the_next_heading(fixtures, tmp_path):
+    doc = read_pdf(fixtures / "sections.pdf")
+    writer = PdfWriter(doc)
+    assert writer.measure("p0/s1", LONGER * 4) is None  # would cross "2. Purpose"
+
+
+def test_moved_text_is_one_copy_only(fixtures, tmp_path):
+    """The moved paragraph is drawn from a stripped copy: no hidden duplicates of other text."""
+    _src, out, _w, _ = _reflow(fixtures, tmp_path, LONGER)
+    raw = pymupdf.open(str(out))[0].get_text(
+        flags=pymupdf.TEXTFLAGS_TEXT & ~pymupdf.TEXT_MEDIABOX_CLIP
+    )
+    assert raw.count("2. Purpose of the Credential") == 1
+    assert raw.count("Read it in full before scheduling your exam.") == 1
+
+
+@pytest.mark.parametrize("breakage", ["wrong_dy", "undeclared_move"])
+def test_negative_control_reflow_errors_are_detected(fixtures, tmp_path, breakage):
+    src, out, writer, _ = _reflow(fixtures, tmp_path, LONGER)
+    moved = list(writer.moved)
+    if breakage == "wrong_dy":
+        moved = [(p, clip, dy + 6) for p, clip, dy in moved]
+    else:
+        moved = []
+    assert check_pdf(src, out, {"p0/s1": LONGER}, moved, writer.boxes)

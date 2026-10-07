@@ -63,6 +63,7 @@ class PdfDocument:
     doc: pymupdf.Document
     segments: list[Segment] = field(default_factory=list)
     layout: dict[str, PdfSegment] = field(default_factory=dict)
+    markers: dict[int, list[pymupdf.Rect]] = field(default_factory=dict)  # list markers by page
 
 
 def _dominant_style(spans: list[dict]) -> Style:
@@ -290,11 +291,13 @@ def segment_lines(
     return out, markers
 
 
-def _page_segments(page: pymupdf.Page, page_no: int) -> list[tuple[PdfSegment, str | None]]:
+def _page_segments(
+    page: pymupdf.Page, page_no: int
+) -> tuple[list[tuple[PdfSegment, str | None]], list[pymupdf.Rect]]:
     blocks = page.get_text("dict", flags=pymupdf.TEXTFLAGS_TEXT)["blocks"]
     out, markers = segment_lines(blocks, page_no, page.rect.width)
     _free_space(page, [seg for seg, _ in out], markers)
-    return out
+    return out, markers
 
 
 def read_pdf(path: Path) -> PdfDocument:
@@ -303,7 +306,8 @@ def read_pdf(path: Path) -> PdfDocument:
         raise ValueError("encrypted PDFs are not supported")
     result = PdfDocument(path=path, doc=doc)
     for page_no, page in enumerate(doc):
-        for k, (seg, skip) in enumerate(_page_segments(page, page_no)):
+        segments, result.markers[page_no] = _page_segments(page, page_no)
+        for k, (seg, skip) in enumerate(segments):
             seg_id = f"p{page_no}/s{k}"
             result.layout[seg_id] = seg
             result.segments.append(

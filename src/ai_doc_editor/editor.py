@@ -299,6 +299,7 @@ def edit_document(
     by_id = {x.id: x for x in segments}
     if is_pdf:
         writer = PdfWriter(doc)
+        moved, boxes = writer.moved, writer.boxes
         report.changes += _apply_pdf(writer, edits, by_id, provider, instruction)
         writer.apply()
         writer.save(output)
@@ -314,7 +315,7 @@ def edit_document(
         if c.status in (ChangeStatus.APPLIED, ChangeStatus.SHORTENED, ChangeStatus.SHRUNK)
     }
     report.violations = (
-        check_pdf(doc_path, output, landed)
+        check_pdf(doc_path, output, landed, moved, boxes)
         if is_pdf
         else check_docx(doc_path, output, landed, track_changes)
     )

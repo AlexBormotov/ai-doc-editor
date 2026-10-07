@@ -119,6 +119,16 @@ Response, validated with pydantic:
 - Font: the embedded font is reused when it is not a subset. Otherwise a built-in URW face
   (`tiro`, `helv`, `cour` and their bold/italic variants, Cyrillic included) is chosen by name and
   flags. The report records the substitution.
+- Sections (`PdfWriter.section`): an edited segment and the segments below it in the same
+  column with the same font size, up to a barrier (another size such as a heading, a drawing,
+  an image, skipped text). New lines start at the original first baseline; each following
+  member keeps its original spacing to the one above and is shifted by `dy`. Shifted members
+  are removed with redactions and redrawn with `show_pdf_page` from a copy of the original page
+  stripped of everything outside the member's clip (no hidden duplicate text). The section's
+  content must end 2 pt above the barrier (never stricter than the original layout). A
+  page-sized fill is the paper, not a barrier. A segment enclosed by or crossed by a drawing
+  (box, table cell) does not flow and keeps the old fixed rule: baselines down to its original
+  last one.
 - Fit (AC-5): scale 1.0 first. If it does not fit, ask the model once to shorten to the old
   length; then allow the font to shrink in 2% steps down to `MIN_SCALE` = 0.8. If nothing fits,
   the original text stays and the status is `rejected`, reason `does_not_fit`.

@@ -44,18 +44,22 @@ different document.
      original runs and formatting; only the changed words are replaced, as `w:ins` / `w:del`
      tracked changes (or directly). Nothing outside the edited runs is touched: no paragraph or
      section properties, no styles.
-   - **PDF:** only edited blocks are touched. The old text is removed with redactions that leave
-     images and vector graphics alone. The new text is wrapped with real font metrics and set on
-     the **original baselines**, in the same font, size, colour and alignment. If it does not fit,
-     the model is asked to shorten it, then the font may shrink to 80%; if it still does not fit,
-     the original stays and the report says why. Blocks never move.
+   - **PDF:** only edited paragraphs are rewritten. The old text is removed with redactions that
+     leave images and vector graphics alone, and the new text is wrapped with real font metrics
+     in the same font, size, colour and alignment. An edited paragraph may get **more or fewer
+     lines**: the paragraphs below it **in the same section** move up or down with it (they are
+     copied from the original page, fonts and all), while the next heading, graphics, images and
+     everything after them stay exactly where they were. If the section has no room left, the
+     model is asked to shorten the text, then the font may shrink to 80%; if it still does not
+     fit, the original stays and the report says why. Paragraphs in boxes or table cells keep
+     their own box.
 5. **Prove it.** The structure check (`src/ai_doc_editor/invariants.py`) compares input and output:
    - Word: paragraph and table counts, table shapes, section properties, every other package
      part, the full XML of every unedited paragraph, the formatting of every unchanged character,
      and that rejecting all tracked changes restores the original text.
    - PDF: page count and sizes, images, vector graphics, the text and position (0.5 pt) of every
-     untouched span; new text must stay inside its block, keep its colour, not shrink below 80%
-     and not overlap anything else.
+     untouched span, or its exact vertical shift if it moved within its section; new text must
+     keep its colour, not shrink below 80% and not overlap any other text or graphics.
 
    Each check has a negative-control test that breaks the behaviour on purpose and expects the
    check to go red.
@@ -212,7 +216,8 @@ CI runs the same commands. The design is described in `intent.md` (acceptance cr
   the report marks it `style_flattened`. Subset-embedded fonts cannot be reused, so edited blocks
   use a metric-similar substitute (serif, sans or mono) and the report says which.
 - PDF: edited text may widen horizontally into free space on the same line (never over other
-  content, never beyond the page's text area), but never vertically.
+  content, never beyond the page's text area). Vertically, a section reflows only down to the
+  next heading, graphic or image; nothing moves across pages.
 - Layout fidelity of DOCX rendering is defined by LibreOffice, and it depends on the fonts it has.
   The Docker image ships metric-compatible fonts (Carlito for Calibri, Caladea for Cambria,
   Liberation for Arial/Times/Courier); the layout gate can still fail in Docker where it passes on

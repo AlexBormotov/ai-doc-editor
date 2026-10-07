@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import zipfile
 from pathlib import Path
+from typing import Any
 
 from lxml import etree
 
@@ -237,13 +238,22 @@ def _close(a, b, tol: float) -> bool:
     return all(abs(x - y) <= tol for x, y in zip(a, b, strict=True))
 
 
-def check_pdf(original: Path, edited: Path, expected: dict[str, str]) -> list[str]:
+def check_pdf(
+    original: Path,
+    edited: Path,
+    expected: dict[str, str],
+    moved: list[tuple[int, Any, float]] | None = None,
+    boxes: dict[str, Any] | None = None,
+) -> list[str]:
     """Violations of AC-4 between `original` and `edited`.
 
     `expected` maps edited segment IDs (as produced by `read_pdf(original)`) to their new text.
-    Untouched text must keep its text and position (0.5 pt). New text must lie inside the
-    segment's allowed rectangle and must not overlap untouched text. Images and vector graphics
-    must be unchanged. Page count and sizes must be unchanged.
+    `moved` lists the regions the writer shifted vertically inside a section, as
+    (page, rect, dy); `boxes` the area each edited segment's text was allowed to use (by default
+    its own widened rectangle). Untouched text must keep its text and position (0.5 pt), or sit
+    exactly `dy` lower if it lies in a moved region. Moved text must not overlap text that did
+    not move. New text must lie inside its box and must not overlap any other text. Images and
+    vector graphics must be unchanged. Page count and sizes must be unchanged.
     """
     import pymupdf
 
@@ -279,16 +289,25 @@ def check_pdf(original: Path, edited: Path, expected: dict[str, str]) -> list[st
             for s in _spans(pa)
             if (s["text"], tuple(round(x, 1) for x in s["bbox"])) not in removed
         ]
+        shifts = [(pymupdf.Rect(r), dy) for p, r, dy in (moved or []) if p == n]
+
+        def target(span: dict, shifts=shifts) -> tuple[pymupdf.Rect, float]:
+            r = pymupdf.Rect(span["bbox"])
+            centre = (r.tl + r.br) / 2
+            dy = next((d for clip, d in shifts if clip.contains(centre)), 0.0)
+            return r + (0, dy, 0, dy), dy
+
+        expected_at = [target(s) for s in kept]
         new_spans = _spans(pb)
         matched: set[int] = set()
-        for s in kept:
+        for s, (want_box, _dy) in zip(kept, expected_at, strict=True):
             hit = next(
                 (
                     i
                     for i, t in enumerate(new_spans)
                     if i not in matched
                     and t["text"] == s["text"]
-                    and _close(t["bbox"], s["bbox"], 0.5)
+                    and _close(t["bbox"], want_box, 0.5)
                 ),
                 None,
             )
@@ -296,7 +315,21 @@ def check_pdf(original: Path, edited: Path, expected: dict[str, str]) -> list[st
                 errors.append(f"page {n}: untouched text moved or lost: {s['text'][:40]!r}")
             else:
                 matched.add(hit)
-        kept_rects = [_core(s["bbox"]) for s in kept]
+        kept_rects = [_core(box) for box, _dy in expected_at]
+        # Shapes and images that touched no text originally (not backgrounds or cell borders
+        # under text, not hairlines such as underlines): new text must stay off them.
+        text_boxes = [pymupdf.Rect(sp["bbox"]) for sp in _spans(pa)]
+        graphics = [
+            r
+            for r in [pymupdf.Rect(d["rect"]) for d in pa.get_drawings()]
+            + [pymupdf.Rect(i["bbox"]) for i in pa.get_image_info()]
+            if min(r.width, r.height) > 3 and not any(r.intersects(t) for t in text_boxes)
+        ]
+        still = [_core(box) for box, dy in expected_at if not dy]
+        for box, dy in expected_at:
+            if dy and any((_core(box) & k).get_area() > 1.0 for k in still if k.intersects(box)):
+                errors.append(f"page {n}: moved text overlaps text that did not move")
+                break
         placed: dict[str, list[dict]] = {sid: [] for sid in edited_here}
         for i, t in enumerate(new_spans):
             if i in matched:
@@ -304,7 +337,7 @@ def check_pdf(original: Path, edited: Path, expected: dict[str, str]) -> list[st
             r = pymupdf.Rect(t["bbox"])
             owner = None
             for sid, seg in edited_here.items():
-                box = seg.avail or seg.rect
+                box = pymupdf.Rect((boxes or {}).get(sid) or seg.avail or seg.rect)
                 vtol = 0.35 * seg.style.size
                 if (
                     r.x0 >= box.x0 - 1
@@ -325,10 +358,10 @@ def check_pdf(original: Path, edited: Path, expected: dict[str, str]) -> list[st
                 errors.append(f"{owner}: new text colour {t['color']:06x} != original")
             if t["size"] < seg.style.size * MIN_SCALE - 0.05:
                 errors.append(f"{owner}: new text size {t['size']:.1f} below the shrink limit")
-            for k in kept_rects:
+            for k in kept_rects + graphics:
                 inter = _core(t["bbox"]) & k
                 if not inter.is_empty and inter.get_area() > 1.0:
-                    errors.append(f"page {n}: new text overlaps untouched text: {t['text'][:40]!r}")
+                    errors.append(f"page {n}: new text overlaps other content: {t['text'][:40]!r}")
                     break
         for sid, spans in placed.items():
             spans.sort(key=lambda s: (round(s["origin"][1], 1), s["origin"][0]))

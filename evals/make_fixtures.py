@@ -252,11 +252,57 @@ def make_layout_pdf(path: Path) -> None:
     doc.save(path, garbage=4, deflate=True)
 
 
+def make_sections_pdf(path: Path) -> None:
+    """Two sections, every line its own text object (as browsers print), with room to reflow."""
+    doc = pymupdf.open()
+    page = doc.new_page(width=595, height=842)
+    page.insert_font(fontname="notos", fontbuffer=pymupdf.Font("notos").buffer)
+    page.insert_font(fontname="notosbo", fontbuffer=pymupdf.Font("notosbo").buffer)
+    y = 80.0
+
+    def heading(text: str) -> None:
+        nonlocal y
+        page.insert_text((60, y), text, fontname="notosbo", fontsize=16)
+        y += 30
+
+    def paragraph(lines: list[str]) -> None:
+        nonlocal y
+        for line in lines:
+            page.insert_text((60, y), line, fontname="notos", fontsize=10.5)
+            y += 16
+        y += 10
+
+    heading("1. About This Certification")
+    paragraph(
+        [
+            "The certification validates that an individual can design, build and deliver",
+            "production-grade AI solutions. It is intended for practitioners working in an",
+            "architect role who select models and integrate them into enterprise systems.",
+        ]
+    )
+    paragraph(
+        [
+            "This guide is the authoritative reference for candidates preparing to sit the",
+            "exam. Read it in full before scheduling your exam.",
+        ]
+    )
+    y += 40
+    heading("2. Purpose of the Credential")
+    paragraph(
+        [
+            "The credential provides an independent assessment of the skills required to",
+            "architect solutions in production environments.",
+        ]
+    )
+    doc.save(path, garbage=4, deflate=True)
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     make_report_en(OUT / "report_en.docx")
     make_contract_ru(OUT / "contract_ru.docx")
     make_layout_pdf(OUT / "layout.pdf")
+    make_sections_pdf(OUT / "sections.pdf")
     if find_soffice() is None:
         print("soffice not found: skipping PDF and DOC renders of the DOCX fixtures")
         return

@@ -11,7 +11,6 @@ dependencies = [
     "python-docx>=1.1",
     "lxml>=5.0",
     "pymupdf>=1.25",
-    "pymupdf-fonts>=1.0.5",
     "pdf2docx>=0.5.8",
     "pydantic>=2.7",
     "pydantic-settings>=2.3",
@@ -29,6 +28,7 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.6",
     "poethepoet>=0.29",
+    "pymupdf-fonts>=1.0.5",  # fixtures only (Noto in layout.pdf)
 ]
 
 [build-system]

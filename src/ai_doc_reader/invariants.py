@@ -160,3 +160,125 @@ def check_docx(
                     continue
                 break
     return errors
+
+
+# -- PDF --------------------------------------------------------------------------------------
+
+
+def _spans(page) -> list[dict]:
+    import pymupdf
+
+    out = []
+    for block in page.get_text("dict", flags=pymupdf.TEXTFLAGS_TEXT)["blocks"]:
+        for line in block.get("lines", []):
+            for span in line["spans"]:
+                if span["text"].strip():
+                    out.append(span)
+    return out
+
+
+def _core(bbox):
+    """A span's box without the top and bottom 20%: line boxes of adjacent lines touch."""
+    import pymupdf
+
+    r = pymupdf.Rect(bbox)
+    inset = r.height * 0.2
+    return pymupdf.Rect(r.x0, r.y0 + inset, r.x1, r.y1 - inset)
+
+
+def _close(a, b, tol: float) -> bool:
+    return all(abs(x - y) <= tol for x, y in zip(a, b, strict=True))
+
+
+def check_pdf(original: Path, edited: Path, expected: dict[str, str]) -> list[str]:
+    """Violations of AC-4 between `original` and `edited`.
+
+    `expected` maps edited segment IDs (as produced by `read_pdf(original)`) to their new text.
+    Untouched text must keep its text and position (0.5 pt). New text must lie inside the
+    segment's allowed rectangle and must not overlap untouched text. Images and vector graphics
+    must be unchanged. Page count and sizes must be unchanged.
+    """
+    import pymupdf
+
+    from ai_doc_reader.pdf.reader import read_pdf
+
+    errors: list[str] = []
+    src = read_pdf(original)
+    a, b = src.doc, pymupdf.open(str(edited))
+    if a.page_count != b.page_count:
+        return [f"page count {a.page_count} -> {b.page_count}"]
+    for n, (pa, pb) in enumerate(zip(a, b, strict=True)):
+        if not _close(pa.rect, pb.rect, 0.01):
+            errors.append(f"page {n}: size changed")
+        imgs_a = sorted(tuple(round(x, 1) for x in i["bbox"]) for i in pa.get_image_info())
+        imgs_b = sorted(tuple(round(x, 1) for x in i["bbox"]) for i in pb.get_image_info())
+        if imgs_a != imgs_b:
+            errors.append(f"page {n}: images changed")
+        draw_a = sorted(tuple(round(x, 1) for x in d["rect"]) for d in pa.get_drawings())
+        draw_b = sorted(tuple(round(x, 1) for x in d["rect"]) for d in pb.get_drawings())
+        if draw_a != draw_b:
+            errors.append(f"page {n}: vector graphics changed")
+
+        edited_here = {sid: src.layout[sid] for sid in expected if src.layout[sid].page == n}
+        removed = {
+            (s["text"], tuple(round(x, 1) for x in s["bbox"]))
+            for seg in edited_here.values()
+            for line in seg.lines
+            for s in line.spans
+        }
+        kept = [
+            s
+            for s in _spans(pa)
+            if (s["text"], tuple(round(x, 1) for x in s["bbox"])) not in removed
+        ]
+        new_spans = _spans(pb)
+        matched: set[int] = set()
+        for s in kept:
+            hit = next(
+                (
+                    i
+                    for i, t in enumerate(new_spans)
+                    if i not in matched
+                    and t["text"] == s["text"]
+                    and _close(t["bbox"], s["bbox"], 0.5)
+                ),
+                None,
+            )
+            if hit is None:
+                errors.append(f"page {n}: untouched text moved or lost: {s['text'][:40]!r}")
+            else:
+                matched.add(hit)
+        kept_rects = [_core(s["bbox"]) for s in kept]
+        placed: dict[str, list[dict]] = {sid: [] for sid in edited_here}
+        for i, t in enumerate(new_spans):
+            if i in matched:
+                continue
+            r = pymupdf.Rect(t["bbox"])
+            owner = None
+            for sid, seg in edited_here.items():
+                box = seg.avail or seg.rect
+                vtol = 0.35 * seg.style.size
+                if (
+                    r.x0 >= box.x0 - 1
+                    and r.x1 <= box.x1 + 1
+                    and r.y0 >= box.y0 - vtol
+                    and r.y1 <= box.y1 + vtol
+                ):
+                    owner = sid
+                    break
+            if owner is None:
+                errors.append(f"page {n}: new text outside its segment: {t['text'][:40]!r}")
+                continue
+            placed[owner].append(t)
+            for k in kept_rects:
+                inter = _core(t["bbox"]) & k
+                if not inter.is_empty and inter.get_area() > 1.0:
+                    errors.append(f"page {n}: new text overlaps untouched text: {t['text'][:40]!r}")
+                    break
+        for sid, spans in placed.items():
+            spans.sort(key=lambda s: (round(s["origin"][1], 1), s["origin"][0]))
+            got = " ".join(" ".join(s["text"] for s in spans).split())
+            want = " ".join(expected[sid].split())
+            if got != want:
+                errors.append(f"{sid}: text {got!r} != expected {want!r}")
+    return errors

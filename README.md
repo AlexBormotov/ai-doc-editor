@@ -42,7 +42,20 @@ What the screenshot shows:
 - **Honest limits, from the report:** the rewritten paragraph is set in a metric-similar sans
   font, because the original Type3 font is a subset that cannot set new words
   (`font_substituted`), and inline styling inside that paragraph is flattened
-  (`style_flattened`). The Changes tab shows the word-level diff of the edit.
+  (`style_flattened`).
+
+The **Changes** tab shows exactly how the text changed:
+
+![Changes tab: word-level diff of the rewritten paragraph](docs/images/screenshot-example2.png)
+
+Each edited segment is one row: its ID (`p0/s4` = page 1, segment 4), its status, and a
+word-level diff of the text, with removed words struck through in red and new words in green
+(here "validates" → "proves", "practitioners working in an architect role" → "architects",
+"select appropriate" → "choose the right"). The header repeats the instruction, the model,
+how many segments were sent and how long it took, the result of the structure check, and which
+segments the model chose as the target. The Notes column lists everything the program had to
+compromise on, so nothing is hidden from the reviewer. The same report is in the downloads as
+`report.html` and `report.json`.
 
 ## Why most "AI document editors" break formatting
 

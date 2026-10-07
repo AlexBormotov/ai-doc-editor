@@ -24,12 +24,21 @@ def _edit(args: argparse.Namespace) -> int:
         print(f"[{fraction:4.0%}] {message}", file=sys.stderr)
 
     result = edit_document(
-        src, instruction, provider, out_dir, track_changes=not args.no_track, progress=progress
+        src,
+        instruction,
+        provider,
+        out_dir,
+        track_changes=not args.no_track,
+        progress=progress,
+        convert_to=args.convert_to,
     )
     r = result.report
     print(f"output:  {result.output}")
-    if getattr(result, "converted", None):
-        print(f"converted: {result.converted}")
+    if result.converted:
+        verdict = "layout check passed" if result.gate.passed else "LAYOUT NOT VERIFIED"
+        print(f"converted: {result.converted} ({verdict})")
+        for failure in result.gate.failures:
+            print(f"  {failure}")
     print(f"report:  {result.report_html}")
     print(" ".join(f"{st.value}={r.count(st)}" for st in ChangeStatus))
     if r.violations:
@@ -56,6 +65,7 @@ def main(argv: list[str] | None = None) -> int:
     e.add_argument("--provider", choices=PROVIDERS)
     e.add_argument("-m", "--model")
     e.add_argument("--no-track", action="store_true", help="DOCX: apply edits without redline")
+    e.add_argument("--convert-to", choices=["docx", "pdf"], help="also convert the result")
     e.add_argument("-o", "--out-dir")
     e.set_defaults(func=_edit)
     p = sub.add_parser("providers", help="list providers and their models")

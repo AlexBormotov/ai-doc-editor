@@ -66,6 +66,7 @@ class ChangeReport(BaseModel):
     duration_s: float = 0.0
     changes: list[Change] = Field(default_factory=list)
     violations: list[str] = Field(default_factory=list)  # structure invariant failures
+    conversion: dict | None = None  # layout gate result when a conversion was requested
 
     def count(self, status: ChangeStatus) -> int:
         return sum(1 for c in self.changes if c.status == status)

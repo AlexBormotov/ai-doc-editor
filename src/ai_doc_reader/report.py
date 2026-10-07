@@ -58,6 +58,19 @@ def write_html(report: ChangeReport, path: Path) -> None:
         + "".join(f"<li>{html.escape(v)}</li>" for v in report.violations)
         + "</ul>"
     )
+    conv = ""
+    if report.conversion:
+        g = report.conversion
+        if g["passed"]:
+            conv = f"<p class=ok>Converted to {g['target'].upper()}: layout check passed.</p>"
+        else:
+            items = "".join(f"<li>{html.escape(x)}</li>" for x in g["failures"])
+            conv = (
+                f"<p class=bad>Converted to {g['target'].upper()}: layout NOT verified "
+                f"({html.escape(g['file'])}).</p><ul>{items}</ul>"
+            )
+        if g.get("note"):
+            conv += f"<p class=notes>{html.escape(g['note'])}</p>"
     counts = " · ".join(f"{s.value}: {report.count(s)}" for s in ChangeStatus if report.count(s))
     page = f"""<!doctype html><html lang=en><head><meta charset=utf-8>
 <meta name=viewport content="width=device-width, initial-scale=1">
@@ -75,7 +88,7 @@ padding:1px 8px;font-size:12px}}.notes{{color:#57606a;font-size:12px}}.prop{{col
 Provider: {html.escape(report.provider)} / {html.escape(report.model)} ·
 {report.segments_sent} of {report.segments_total} segments sent · {report.duration_s:.1f} s<br>
 Instruction: {html.escape(report.instruction)}</p>
-<p>{counts or "No changes."}</p>{verified}
+<p>{counts or "No changes."}</p>{verified}{conv}
 <table><tr><th>Segment</th><th>Status</th><th>Change</th><th>Notes</th></tr>
 {"".join(rows)}</table></body></html>"""
     path.write_text(page, encoding="utf-8")

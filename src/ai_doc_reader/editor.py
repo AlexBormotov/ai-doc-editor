@@ -7,6 +7,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
+from ai_doc_reader.convert import Conversion, GateResult, docx_to_pdf, pdf_to_docx
 from ai_doc_reader.docx.reader import read_docx
 from ai_doc_reader.docx.writer import apply_edits
 from ai_doc_reader.invariants import check_docx, check_pdf
@@ -33,6 +34,27 @@ class EditResult:
     report: ChangeReport
     report_json: Path
     report_html: Path
+    converted: Path | None = None
+    gate: GateResult | None = None
+
+
+def convert_output(path: Path, target: str, out_dir: Path, tol_pt: float) -> Conversion:
+    """Convert `path` to `target` ("docx" | "pdf"); a file failing the gate is renamed."""
+    src_ext = path.suffix.lower().lstrip(".")
+    if target == src_ext:
+        raise DocumentError(f"the document is already .{target}")
+    conv_dir = out_dir / "converted"
+    if target == "pdf":
+        conv = docx_to_pdf(path, conv_dir)
+    elif target == "docx":
+        conv = pdf_to_docx(path, conv_dir, tol_pt)
+    else:
+        raise DocumentError(f"cannot convert to {target!r}")
+    if not conv.gate.passed:
+        marked = conv.path.with_name(f"{conv.path.stem}.LAYOUT-NOT-VERIFIED{conv.path.suffix}")
+        conv.path.replace(marked)
+        conv.path = marked
+    return conv
 
 
 def _batches(segments: list[Segment], max_chars: int) -> list[list[Segment]]:
@@ -166,6 +188,7 @@ def edit_document(
     track_changes: bool = True,
     progress: Progress | None = None,
     settings: Settings | None = None,
+    convert_to: str | None = None,
 ) -> EditResult:
     s = settings or get_settings()
     started = time.monotonic()
@@ -228,10 +251,23 @@ def edit_document(
     )
     order = {seg_id: i for i, seg_id in enumerate(by_id)}
     report.changes.sort(key=lambda c: order.get(c.id, len(order)))
+    conv = None
+    if convert_to:
+        if progress:
+            progress(0.97, f"Converting to {convert_to.upper()} and checking the layout")
+        conv = convert_output(output, convert_to, out_dir, s.layout_tolerance_pt)
+        report.conversion = conv.gate.model_dump() | {"file": conv.path.name}
     report.duration_s = time.monotonic() - started
     rj, rh = out_dir / "report.json", out_dir / "report.html"
     write_json(report, rj)
     write_html(report, rh)
     if progress:
         progress(1.0, "Done")
-    return EditResult(output=output, report=report, report_json=rj, report_html=rh)
+    return EditResult(
+        output=output,
+        report=report,
+        report_json=rj,
+        report_html=rh,
+        converted=conv.path if conv else None,
+        gate=conv.gate if conv else None,
+    )

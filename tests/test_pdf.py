@@ -117,7 +117,7 @@ def test_existing_fonts_are_reused_when_embedded_in_full(fixtures):
     assert notes == ["font_substituted: Cambria -> serif"]
 
 
-@pytest.mark.parametrize("breakage", ["shift_untouched", "text_outside"])
+@pytest.mark.parametrize("breakage", ["shift_untouched", "text_outside", "hidden_colour"])
 def test_negative_control_layout_break_is_detected(fixtures, tmp_path, breakage):
     """Break one behaviour on purpose: the invariant check must go red."""
     src = fixtures / "layout.pdf"
@@ -134,8 +134,15 @@ def test_negative_control_layout_break_is_detected(fixtures, tmp_path, breakage)
         page.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_NONE)
         x, y = victim["origin"]
         page.insert_text((x + 6, y), victim["text"], fontsize=victim["size"])
-    else:
+    elif breakage == "text_outside":
         page.insert_text((300, 600), "stray text", fontsize=10)
+    else:
+        writer2 = PdfWriter(read_pdf(src))
+        seg2 = writer2.pdf.layout[seg.id]
+        seg2.style.color = 0xFFFFFF  # white text: content hidden
+        writer2.stage(seg.id, expected[seg.id])
+        writer2.apply()
+        doc = writer2.pdf
     out = tmp_path / "broken.pdf"
     doc.doc.save(str(out))
     assert check_pdf(src, out, expected), "invariant check missed a layout break"

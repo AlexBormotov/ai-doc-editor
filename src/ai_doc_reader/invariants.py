@@ -136,6 +136,9 @@ def check_docx(
             if _c14n(pa.find(q("w:pPr"))) != _c14n(pb.find(q("w:pPr"))):
                 errors.append(f"{seg_id}: paragraph properties changed")
             if i in hosts:
+                # Only the nested text box changed: the host's own text and formats must not.
+                if char_formats(pa) != char_formats(pb):
+                    errors.append(f"{seg_id}: text box host paragraph changed")
                 continue
             if i not in edited_ps:
                 if _c14n(pa) != _c14n(pb):
@@ -150,6 +153,10 @@ def check_docx(
             if not tracked and (pb.find(f".//{q('w:ins')}") is not None):
                 errors.append(f"{seg_id}: tracked change present with tracking off")
             fa, fb = char_formats(pa), char_formats(pb)
+            # New text may only reuse formats already in the paragraph (no hidden, recoloured
+            # or otherwise new formatting introduced by an edit).
+            if {f for _, f in fb} - {f for _, f in fa}:
+                errors.append(f"{seg_id}: edit introduced formatting not in the original")
             sm = SequenceMatcher(None, [c for c, _ in fa], [c for c, _ in fb], autojunk=False)
             for blk in sm.get_matching_blocks():
                 for k in range(blk.size):
@@ -201,6 +208,7 @@ def check_pdf(original: Path, edited: Path, expected: dict[str, str]) -> list[st
     import pymupdf
 
     from ai_doc_reader.pdf.reader import read_pdf
+    from ai_doc_reader.pdf.writer import MIN_SCALE
 
     errors: list[str] = []
     src = read_pdf(original)
@@ -270,6 +278,13 @@ def check_pdf(original: Path, edited: Path, expected: dict[str, str]) -> list[st
                 errors.append(f"page {n}: new text outside its segment: {t['text'][:40]!r}")
                 continue
             placed[owner].append(t)
+            # New text keeps the segment's colour and may shrink only down to MIN_SCALE, so an
+            # edit cannot hide content (white or microscopic text).
+            seg = edited_here[owner]
+            if t["color"] != seg.style.color:
+                errors.append(f"{owner}: new text colour {t['color']:06x} != original")
+            if t["size"] < seg.style.size * MIN_SCALE - 0.05:
+                errors.append(f"{owner}: new text size {t['size']:.1f} below the shrink limit")
             for k in kept_rects:
                 inter = _core(t["bbox"]) & k
                 if not inter.is_empty and inter.get_area() > 1.0:

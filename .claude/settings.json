@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/obsidian-docs-sessionstart.sh",
+            "timeout": 15,
+            "statusMessage": "Loading project documentation hub"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/obsidian-docs-track.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/obsidian-docs-stop.sh",
+            "timeout": 10,
+            "statusMessage": "Checking documentation freshness"
+          }
+        ]
+      }
+    ]
+  }
+}

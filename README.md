@@ -242,7 +242,10 @@ uv run poe fixtures        # regenerate evals/fixtures
 uv run pytest -m live      # live smoke tests against Ollama and the CLIs
 ```
 
-CI runs the same commands. The design is described in `intent.md` (acceptance criteria),
+CI runs the same commands. Developer documentation is an Obsidian vault in
+`.claude/docs/obsidian/` (hub `INDEX.md`, one note per source file in `code-map/`, a work log in
+`Timeline.md`); Claude Code hooks from [obsidian-hooks](https://github.com/AlexBormotov/obsidian-hooks)
+keep it up to date. The design is described in `intent.md` (acceptance criteria),
 `spec.md` (contracts and decision records) and `plan.md` (steps and every deviation from them).
 
 ## Limitations

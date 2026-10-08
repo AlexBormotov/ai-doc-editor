@@ -49,4 +49,7 @@ uv run python scripts/cli_bridge.py  # host bridge so Docker can use the claude/
   command.
 - Do not commit `ai-factory-kit/`, `CONTEXT.md`, `GRILL.md`, `samples/private/`, `runs/` or `.env`.
 - Never push to a remote without the owner's explicit command.
+- Documentation lives in `.claude/docs/obsidian/` (plain Markdown, an Obsidian vault). Before
+  adding code, check `code-map/` for an existing function; after changing a source file, update
+  its code-map note, the section note and `Timeline.md`.
 - If implementation contradicts a fact in `plan.md`, log it under **Deviations** before continuing.

@@ -10,8 +10,9 @@ tags:
 Hub: [[INDEX]]. Newest entries on top, format: `YYYY-MM-DD HH:MM — what was done`.
 
 <!-- NEW-ENTRIES-BELOW: add each new entry on the line right after this marker (newest on top). Replacing only this marker line keeps the edit cheap — the rest of the file is not rewritten. -->
+- 2026-10-08 16:36 — Vault moved from `.claude/docs/obsidian/` to `docs/obsidian/`; hooks point at the new path (`DOCS="docs/obsidian"`), and the track hook now normalises Windows slashes and ignores edits inside the vault so documenting does not re-trigger itself.
 
-- 2026-10-08 15:40 — Documentation system set up: Obsidian vault in `.claude/docs/obsidian/` with code map for every source file, sections [[Backend]], [[Frontend]], [[Evals]], [[Planning]], and the obsidian-hooks (SessionStart / PostToolUse / Stop).
+- 2026-10-08 15:40 — Documentation system set up: Obsidian vault in `docs/obsidian/` with code map for every source file, sections [[Backend]], [[Frontend]], [[Evals]], [[Planning]], and the obsidian-hooks (SessionStart / PostToolUse / Stop).
 - 2026-10-07 08:42 — README: Russian contract screenshot removed; repository made public.
 - 2026-10-07 08:38 — README: example of the Changes tab (word-level diff).
 - 2026-10-07 08:26 — README example with a UI screenshot (local qwen3.5:9b rewrites the first paragraph of a real PDF); Changes tab made dark in the UI ([[ui]]).

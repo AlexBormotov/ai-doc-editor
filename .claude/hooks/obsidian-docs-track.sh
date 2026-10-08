@@ -4,17 +4,20 @@
 # Portable: no jq; silently no-ops if the vault is absent.
 # Hooks inherit Claude's *current* cwd (can change mid-session) -> anchor to project root.
 cd "${CLAUDE_PROJECT_DIR:-$(dirname "$0")/../..}" 2>/dev/null || exit 0
-DOCS=".claude/docs/obsidian"
+DOCS="docs/obsidian"
 [ -d "$DOCS" ] || exit 0
 
 input=$(cat)
 fp=$(printf '%s' "$input" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*:[[:space:]]*"//; s/"$//')
+# Windows paths arrive JSON-escaped (D:\\x\\y): normalise slashes before matching.
+fp=$(printf '%s' "$fp" | tr '\\' '/' | tr -s '/')
 
-# Ignore edits to the docs vault / Claude config itself and empty paths
+# Ignore edits to the docs vault (it lives outside .claude in this project), Claude config
+# itself and empty paths
 case "$fp" in
-  *".claude"*|"") exit 0 ;;
+  *".claude"*|*"$DOCS"*|"") exit 0 ;;
 esac
 
-printf '%s\n' "$fp" | tr '\\' '/' | tr -s '/' >> "$DOCS/.changed-files"
+printf '%s\n' "$fp" >> "$DOCS/.changed-files"
 touch "$DOCS/.pending-changes"
 exit 0

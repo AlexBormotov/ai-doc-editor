@@ -5,7 +5,7 @@
 # Portable: no jq; silently no-ops if the vault is absent.
 # Hooks inherit Claude's *current* cwd (can change mid-session) -> anchor to project root.
 cd "${CLAUDE_PROJECT_DIR:-$(dirname "$0")/../..}" 2>/dev/null || exit 0
-DOCS=".claude/docs/obsidian"
+DOCS="docs/obsidian"
 MARKER="$DOCS/.pending-changes"
 CHANGED="$DOCS/.changed-files"
 

@@ -6,8 +6,8 @@ this file.
 ## What this is
 
 A demo service that edits Word (`.docx`, `.doc`) and PDF documents with an LLM while preserving
-layout. Read in this order: `intent.md` (what and acceptance criteria AC-n), `spec.md` (architecture,
-contracts, glossary, decision records), `plan.md` (steps, facts, deviations).
+layout. Read in this order: `docs/intent.md` (what and acceptance criteria AC-n), `docs/spec.md`
+(architecture, contracts, glossary, decision records), `docs/plan.md` (steps, facts, deviations).
 
 ## Commands
 

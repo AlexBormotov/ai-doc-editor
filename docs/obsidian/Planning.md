@@ -8,8 +8,7 @@ tags:
 
 Hub: [[INDEX]]
 
-The approval chain of the method kit lives in the repository root: `intent.md` → `spec.md` →
-`plan.md`. Deviations from the plan are recorded in `plan.md` → Deviations, never silently.
+The approval chain of the method kit lives in `docs/`: `intent.md` → `spec.md` → `plan.md`. Deviations from the plan are recorded in `plan.md` → Deviations, never silently.
 
 ## Current stage
 

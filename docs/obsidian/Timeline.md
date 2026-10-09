@@ -10,6 +10,7 @@ tags:
 Hub: [[INDEX]]. Newest entries on top, format: `YYYY-MM-DD HH:MM — what was done`.
 
 <!-- NEW-ENTRIES-BELOW: add each new entry on the line right after this marker (newest on top). Replacing only this marker line keeps the edit cheap — the rest of the file is not rewritten. -->
+- 2026-10-09 16:01 — Owner reorganised the markdown files: `intent.md`, `spec.md`, `plan.md` moved to `docs/`, `DESCRIPTION.md` removed (README supersedes it), private notes moved to the ignored `.claude/docs/`. Path references updated in `AGENTS.md`, README, [[INDEX]] and [[Planning]].
 - 2026-10-08 16:36 — Vault moved from `.claude/docs/obsidian/` to `docs/obsidian/`; hooks point at the new path (`DOCS="docs/obsidian"`), and the track hook now normalises Windows slashes and ignores edits inside the vault so documenting does not re-trigger itself.
 
 - 2026-10-08 15:40 — Documentation system set up: Obsidian vault in `docs/obsidian/` with code map for every source file, sections [[Backend]], [[Frontend]], [[Evals]], [[Planning]], and the obsidian-hooks (SessionStart / PostToolUse / Stop).

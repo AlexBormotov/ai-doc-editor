@@ -11,8 +11,8 @@ model only sees text segments and returns edits for them; writers put every edit
 object it came from; a structure check (the oracle) proves the rest is untouched.
 
 Every section is connected via wikilinks — open Graph View in Obsidian to see the whole
-structure. The approved design lives in the repository root: `intent.md` (acceptance criteria
-AC-1…AC-12), `spec.md` (contracts, decision records), `plan.md` (steps and every deviation).
+structure. The approved design lives in `docs/`: `intent.md` (acceptance criteria AC-1…AC-12),
+`spec.md` (contracts, decision records), `plan.md` (steps and every deviation).
 
 ## Sections
 
